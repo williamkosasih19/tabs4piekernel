@@ -5,7 +5,7 @@ export CROSS_COMPILE=/home/williamkosasih/aarch64-linux-android-4.9/bin/aarch64-
 exoirt ANDROID_MAJOR_VERSION=p
 export PLATFORM_VERSION=9.0.0
 
-make -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android gts4llte_eur_open_defconfig
+make -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android william_defconfig
 make -j64 -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android
 
 cd anyKernel3
