@@ -4,7 +4,7 @@
 #include <linux/seq_file.h>
 #include <asm/setup.h>
 
-char patched_command_line[COMMAND_LINE_SIZE];
+static char patched_command_line[COMMAND_LINE_SIZE];
 
 static int cmdline_proc_show(struct seq_file *m, void *v)
 {
@@ -16,13 +16,13 @@ static int cmdline_proc_show(struct seq_file *m, void *v)
 	needle_address_begin = strstr(patched_command_line, "androidboot.verifiedbootstate=");
 	needle_address_end = needle_address_begin;
 
-	length = strlen(saved_command_line - (needle_address_end - saved_command_line) + 1);
-
 	if (needle_address_end)
 	{
+		needle_address_end++;
 		while (*needle_address_end++ != ' ')
 			;
-		memmove(needle_address_begin, needle_address_end, length);
+		length = strlen(patched_command_line) - (needle_address_end - patched_command_line);
+		memmove(needle_address_begin, needle_address_end + 1, length);
 	}
 
 	seq_printf(m, "%s\n", patched_command_line);
