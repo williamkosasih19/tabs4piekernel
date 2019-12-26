@@ -1,0 +1,73 @@
+UKM=/data/UKM;
+BB=$UKM/busybox;
+DEVICE=`sh $UKM/device/.device.sh`;
+
+
+bool() {
+  [ `$BB cat $1` == "Y" ] && $BB echo "1";
+  [ `$BB cat $1` == "N" ] && $BB echo "0";
+}
+
+cat << CTAG
+{
+    sections: [
+		`if [ -n "$DEVICE" ]; then
+			. $UKM/config.json.generate.info
+			$BB echo ','
+			. $UKM/config.json.generate.status
+			$BB echo ','
+			. $UKM/config.json.generate.cpu
+			$BB echo ','
+			if [ -d "/sys/module/clock_cpu_8996" -o -f "/sys/devices/system/cpu/cpu4/cpufreq/scaling_available_frequencies" ]; then
+				. $UKM/config.json.generate.cpu2
+				$BB echo ','
+            		fi
+			. $UKM/config.json.generate.cpuboost
+			$BB echo ','
+			. $UKM/config.json.generate.hotplug
+			$BB echo ','
+			. $UKM/config.json.generate.thermal
+			$BB echo ','
+			if [ -f "/sys/devices/system/cpu/cpufreq/vdd_table/vdd_levels" -o -f "/sys/devices/system/cpu/cpu0/cpufreq/UV_mV_table" ]; then
+				. $UKM/config.json.generate.cpuvolt
+				$BB echo ','
+			fi
+		    	if [ -d "/sys/module/clock_cpu_8996" -o -d "/sys/devices/platform/17500000.mali" ]; then
+		        	. $UKM/config.json.generate.kryo.io
+		    	else
+		        	. $UKM/config.json.generate.io
+				$BB echo ','
+		    	fi
+			. $UKM/config.json.generate.gpu
+			$BB echo ','
+			if [ -f "/sys/devices/platform/kcal_ctrl.0/kcal" -o -f "/sys/devices/platform/mipi_lgit.1537/kgamma_b" -o -f "/sys/class/misc/gammacontrol/brightness" -o -f "/sys/devices/i2c-0/0-0038/lm3530_br_mode" -o -f "/sys/module/msm_fb/parameters/backlight_dimmer" -o -f "/sys/devices/platform/mipi_lgit.1537/kgamma_blue" -o -f "/sys/module/dsi_panel/kgamma_bn" -o -d "/sys/devices/virtual/graphics/fb0" -o -f "/sys/module/panel_s6e8aa0/parameters/contrast" -o -f "/sys/class/mdnie/mdnie/rgb" -o -f "/sys/devices/platform/omapdss/manager0/gamma" -o -f "/sys/class/backlight/s6e8aa0/acl_set" ]; then
+				. $UKM/config.json.generate.gamma
+			$BB echo ','
+			fi
+			if [ -d "/sys/kernel/sound_control_3" -o -d "/sys/class/misc/soundcontrol" -o -d "/sys/kernel/sound_control" ]; then
+				. $UKM/config.json.generate.sound
+			$BB echo ','
+			fi
+			if [ -d "/sys/bus/i2c/devices/0-0058" ]; then
+				. $UKM/config.json.generate.speaker
+			$BB echo ','
+			fi
+			. $UKM/config.json.generate.mem
+			$BB echo ','
+			. $UKM/config.json.generate.wake
+			$BB echo ','
+			. $UKM/config.json.generate.misc
+			$BB echo ','
+			. $UKM/config.json.generate.adv
+			$BB echo ','
+			. $UKM/config.json.generate.bprop
+			$BB echo ','
+			. $UKM/config.json.generate.tools
+			$BB echo ','
+			. $UKM/config.json.generate.profile
+		else
+			. $UKM/config.json.generate.error
+		fi`
+    ]
+}
+CTAG

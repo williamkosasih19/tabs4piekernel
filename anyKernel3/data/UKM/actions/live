@@ -1,0 +1,119 @@
+UKM=/data/UKM;
+BB=$UKM/busybox;
+DEVICE=`sh $UKM/device/.device.sh`;
+
+case $1 in
+	CPU)
+		$BB echo `sh $DEVICE LiveCPU1`;
+	;;
+	CPU2)
+		$BB echo `sh $DEVICE LiveCPU2`;
+	;;
+	GPU)
+		$BB echo `sh $DEVICE LiveGPU`;
+	;;
+	CPUFrequency)
+		$BB echo `sh $DEVICE LiveCPUFrequency`;
+	;;
+	CPU1Frequency)
+		$BB echo `sh $DEVICE LiveCPU1Frequency`;
+	;;
+	GPUFrequency)
+		$BB echo `sh $DEVICE LiveGPUFrequency`;
+	;;
+	CpuBoost)
+		$BB echo `sh $DEVICE LiveCpuBoost`;
+	;;
+	Thermal)
+		$BB echo `sh $DEVICE LiveThermal`;
+	;;
+	Hima)
+		$BB echo `sh $DEVICE LiveHima`;
+	;;
+	Lazy)
+		$BB echo `sh $DEVICE LiveLazy`;
+	;;
+	Asmp)
+		$BB echo `sh $DEVICE LiveAsmp`;
+	;;
+	Intelli)
+		$BB echo `sh $DEVICE LiveIntelli`;
+	;;
+	Bricked)
+		$BB echo `sh $DEVICE LiveBricked`;
+	;;
+	MSM)
+		$BB echo `sh $DEVICE LiveMSM`;
+	;;
+	Auto)
+		$BB echo `sh $DEVICE LiveAuto`;
+	;;
+	Dyna)
+		$BB echo `sh $DEVICE LiveDyna`;
+	;;
+	Blu)
+		$BB echo `sh $DEVICE LiveBlu`;
+	;;
+	Alucard)
+		$BB echo `sh $DEVICE LiveAlucard`;
+	;;
+	Mako)
+		$BB echo `sh $DEVICE LiveMako`;
+	;;
+	Thunder)
+		$BB echo `sh $DEVICE LiveThunder`;
+	;;
+	Aio)
+		$BB echo `sh $DEVICE LiveAio`;
+	;;
+	IO)
+		$BB echo `sh $DEVICE LiveIO`;
+	;;
+	Gamma)
+		$BB echo `sh $DEVICE LiveGamma`;
+	;;
+	Memory)
+		$BB echo `sh $DEVICE LiveMemory`;
+	;;
+	ChargeCurrent)
+		$BB echo `sh $DEVICE LiveChargeCurrent`;
+	;;
+	StateNotifier)
+		$BB echo `sh $DEVICE LiveStateNotifier`;
+	;;
+	BatteryTemperature)
+		$BB echo `sh $DEVICE LiveBatteryTemperature`;
+	;;
+	CPUTemperature)
+		$BB echo `sh $DEVICE LiveCPUTemperature`;
+	;;
+	UpTime)
+		$BB echo `sh $DEVICE LiveUpTimeCPU`;
+	;;
+	UpTime1)
+		$BB echo `sh $DEVICE LiveUpTimeCPU1`;
+	;;
+	UpTime2)
+		$BB echo `sh $DEVICE LiveUpTimeCPU2`;
+	;;
+	UnUsed)
+		$BB echo `sh $DEVICE LiveUnUsedCPU`;
+	;;
+	UnUsed1)
+		$BB echo `sh $DEVICE LiveUnUsedCPU1`;
+	;;
+	UnUsed2)
+		$BB echo `sh $DEVICE LiveUnUsedCPU2`;
+	;;
+	InstallationCheck)
+		$BB echo `if [ ! -f "/system/etc/init.d/UKM" ]; then $BB echo "UKM file missing in init.d"; elif [ ! -f "/system/addon.d/UKM.sh" ]; then $BB echo "UKM.sh file missing in addon.d"; else $BB echo "All checks OK"; fi`;
+	;;
+	Advanced)
+		$BB echo `sh $DEVICE LiveAdvanced`;
+	;;
+	HardLimit)
+		$BB echo `sh $DEVICE LiveHardLimit`;
+	;;
+	MsmPerformance)
+		$BB echo `sh $DEVICE LiveMsmPerformance`;
+esac;
