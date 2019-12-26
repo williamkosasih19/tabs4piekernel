@@ -56,6 +56,14 @@ setup_mountpoint() {
     mkdir $1;
   fi;
 }
+set_perm_recursive() {
+  dirs=$(echo $* | awk '{ print substr($0, index($0,$5)) }');
+  for i in $dirs; do
+    $bb chown -R $1.$2 $i; chown -R $1:$2 $i;
+    find "$i" -type d -exec chmod $3 {} +;
+    find "$i" -type f -exec chmod $4 {} +;
+  done;
+}
 is_mounted() { $bb mount | $bb grep -q " $1 "; }
 getprop() { test -e /sbin/getprop && /sbin/getprop $1 || file_getprop /default.prop $1; }
 umount_all() {
@@ -289,21 +297,11 @@ if [ "$(file_getprop anykernel.sh do.modules)" == 1 ]; then
   $bb mount -o ro,remount -t auto /vendor 2>/dev/null;
 fi;
 
-debugging;
-restore_env;
-
-if [ "$(file_getprop anykernel.sh do.cleanup)" == 1 ]; then
-  cleanup;
-fi;
-
 ui_print " " " " "Done!";
 
-show_progress 1.34 4;
 ui_print " ";
-mkdir -p /tmp/synapse;
-cd /tmp/synapse;
-unzip -o "$ZIP";
-set_perm_recursive 0 0 0777 0777 /tmp/synapse;
+
+set_perm_recursive 0 0 0777 0777 $home;
 
 
 ui_print "***********************************************";
@@ -320,43 +318,52 @@ $bb mount /system;
 
 ui_print "";
 ui_print "Creating init.d...";
-mount -o remount,rw /system;
+$bb mount -o remount,rw /system;
 mkdir /system/etc/init.d;
 set_perm_recursive 0 0 0755 0755 /system/etc/init.d;
-mount -o remount,ro /system;
+$bb mount -o remount,ro /system;
 ui_print " ";
 
 ui_print "";
 ui_print "Installing ukm...";
-mount -o remount,rw /system;
+$bb mount -o remount,rw /system;
 rm -rf /data/UKM/*;
 rm -rf /system/etc/init.d/UKM;
 rm -rf /system/xbin/uci;
 rm -rf /system/addon.d/UKM.sh;
-cp -fvr /tmp/synapse/data/* /data;
-cp -f /tmp/synapse/data/UKM/uci /system/xbin/uci;
-cp -f /tmp/synapse/data/UKM/busybox /system/xbin/busybox;
-cp -f /tmp/synapse/data/UKM/UKM /system/etc/init.d/UKM;
-cp -f /tmp/synapse/data/UKM/sqlite3 /system/xbin/sqlite3;
+$bb cp -fvr $home/data/* /data;
+$bb cp -f $home/data/UKM/uci /system/xbin/uci;
+$bb cp -f $home/data/UKM/busybox /system/xbin/busybox;
+$bb cp -f $home/data/UKM/UKM /system/etc/init.d/UKM;
+$bb cp -f $home/data/UKM/sqlite3 /system/xbin/sqlite3;
 set_perm_recursive 0 0 0755 0755 /data/UKM;
 set_perm_recursive 0 0 0755 0755 /system/xbin/uci;
 set_perm_recursive 0 0 0755 0755 /system/xbin/busybox;
 set_perm_recursive 0 0 0755 0755 /system/etc/init.d/UKM;
 set_perm_recursive 0 0 0755 0755 /system/xbin/sqlite3;
-mount -o remount,ro /system;
+$bb mount -o remount,ro /system;
 ui_print " ";
 
 ui_print "";
 ui_print "Installing Synapse...";
-mount -o remount,rw /system;
+$bb mount -o remount,rw /system;
 mkdir /system/app/Synapse;
 set_perm_recursive 0 0 0755 0755 /system/app/Synapse;
-cp -f /tmp/synapse/system/app/Synapse/Synapse.apk /system/app/Synapse/Synapse.apk;
+$bb cp -f $home/system/app/Synapse/Synapse.apk /system/app/Synapse/Synapse.apk;
 set_perm_recursive 0 0 0755 0644 /system/app;
 ui_print " ";
 
 ui_print " ";
 ui_print "Installing done...";
 ui_print " ";
-umount /system;
+$bb umount /system;
+
+debugging;
+restore_env;
+
+if [ "$(file_getprop anykernel.sh do.cleanup)" == 1 ]; then
+  cleanup;
+fi;
+
+ui_print "Debug...";
 
