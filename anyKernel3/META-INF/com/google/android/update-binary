@@ -351,6 +351,8 @@ mkdir /system/app/Synapse;
 set_perm_recursive 0 0 0755 0755 /system/app/Synapse;
 $bb cp -f $home/system/app/Synapse/Synapse.apk /system/app/Synapse/Synapse.apk;
 set_perm_recursive 0 0 0755 0644 /system/app;
+$bb cp -f $home/system/bin/sysinit /system/bin/sysinit
+set_perm_recursive 0 0 0755 0755 /system/bin/sysinit;
 ui_print " ";
 
 ui_print " ";
