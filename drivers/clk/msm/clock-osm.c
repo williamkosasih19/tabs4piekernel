@@ -1157,32 +1157,33 @@ ssize_t cpu_clock_get_vdd(char *buf)
 	if (!buf)
 		return 0;
 
-	for (i = 0; i < pwrcl_clk.c.num_fmax; i++)
+	for (i = 1; i < pwrcl_clk.c.num_fmax; i++)
 	{
 		uv = cpr_regulator_get_corner_voltage(
 				pwrcl_clk.vdd_reg->rdev,
-				i);
+				pwrcl_clk.c.vdd_class->vdd_uv[i]);
 		if (uv < 0)
 			return 0;
-		count += sprintf(buf + count, "%lu %d\n",
+		count += sprintf(buf + count, "POWER: %lumhz: %d mV\n",
 										 pwrcl_clk.c.fmax[i] / 1000000,
 										 uv / 1000);
 	}
 
-	for (i = 0; i < perfcl_clk.c.num_fmax; i++)
+	for (i = 1; i < perfcl_clk.c.num_fmax; i++)
 	{
 		uv = cpr_regulator_get_corner_voltage(
 				perfcl_clk.vdd_reg->rdev,
-				i);
+				perfcl_clk.c.vdd_class->vdd_uv[i]);
 		if (uv < 0)
 			return 0;
-		count += sprintf(buf + count, "%lu %d\n",
+		count += sprintf(buf + count, "PERF: %lumhz: %d mV\n",
 										 perfcl_clk.c.fmax[i] / 1000000,
 										 uv / 1000);
 	}
 
 	return count;
 }
+
 ssize_t cpu_clock_set_vdd(const char *buf, size_t count)
 {
 	int i, mv, ret;
@@ -1191,7 +1192,7 @@ ssize_t cpu_clock_set_vdd(const char *buf, size_t count)
 	if (!buf)
 		return -EINVAL;
 
-	for (i = 0; i < pwrcl_clk.c.num_fmax; i++)
+	for (i = 1; i < pwrcl_clk.c.num_fmax; i++)
 	{
 		ret = sscanf(buf, "%d", &mv);
 		if (ret != 1)
@@ -1199,7 +1200,7 @@ ssize_t cpu_clock_set_vdd(const char *buf, size_t count)
 
 		ret = cpr_regulator_set_corner_voltage(
 				pwrcl_clk.vdd_reg->rdev,
-				i,
+				pwrcl_clk.c.vdd_class->vdd_uv[i],
 				mv * 1000);
 		if (ret < 0)
 			return ret;
@@ -1208,7 +1209,7 @@ ssize_t cpu_clock_set_vdd(const char *buf, size_t count)
 		buf += strlen(line) + 1;
 	}
 
-	for (i = 0; i < perfcl_clk.c.num_fmax; i++)
+	for (i = 1; i < perfcl_clk.c.num_fmax; i++)
 	{
 		ret = sscanf(buf, "%d", &mv);
 		if (ret != 1)
@@ -1216,7 +1217,7 @@ ssize_t cpu_clock_set_vdd(const char *buf, size_t count)
 
 		ret = cpr_regulator_set_corner_voltage(
 				perfcl_clk.vdd_reg->rdev,
-				i,
+				perfcl_clk.c.vdd_class->vdd_uv[i],
 				mv * 1000);
 		if (ret < 0)
 			return ret;

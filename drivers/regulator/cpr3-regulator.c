@@ -4350,8 +4350,8 @@ int cpr_regulator_get_corner_voltage(struct regulator_dev *rdev,
 {
 	struct cpr3_regulator *vreg = rdev_get_drvdata(rdev);
 
-	if (corner >= 0 && corner <= vreg->corner_count)
-		return vreg->corner[corner].last_volt;
+	if (corner >= 1 && corner <= vreg->corner_count)
+		return vreg->corner[0].last_volt;
 
 	return -EINVAL;
 }
@@ -4362,7 +4362,7 @@ int cpr_regulator_set_corner_voltage(struct regulator_dev *rdev,
 	struct cpr3_regulator *vreg = rdev_get_drvdata(rdev);
 	struct cpr3_controller *ctrl = vreg->thread->ctrl;
 
-	if (corner >= 0 && corner <= vreg->corner_count)
+	if (corner >= 1 && corner <= vreg->corner_count)
 	{
 		mutex_lock(&ctrl->lock);
 		vreg->corner[corner].last_volt = volt;
