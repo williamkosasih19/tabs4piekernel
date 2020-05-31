@@ -35,8 +35,6 @@
 #include <linux/uaccess.h>
 #include <linux/sched.h>
 
-#include "../../regulator/internal.h"
-
 #include <soc/qcom/scm.h>
 #include <soc/qcom/clock-pll.h>
 #include <soc/qcom/clock-local2.h>
@@ -47,8 +45,7 @@
 
 #include "clock.h"
 
-enum clk_osm_bases
-{
+enum clk_osm_bases {
 	OSM_BASE,
 	PLL_BASE,
 	EFUSE_BASE,
@@ -56,8 +53,7 @@ enum clk_osm_bases
 	NUM_BASES,
 };
 
-enum clk_osm_lut_data
-{
+enum clk_osm_lut_data {
 	FREQ,
 	FREQ_DATA,
 	PLL_OVERRIDES,
@@ -66,24 +62,22 @@ enum clk_osm_lut_data
 	NUM_FIELDS,
 };
 
-enum clk_osm_trace_method
-{
+enum clk_osm_trace_method {
 	XOR_PACKET,
 	PERIODIC_PACKET,
 };
 
-enum clk_osm_trace_packet_id
-{
+enum clk_osm_trace_packet_id {
 	TRACE_PACKET0,
 	TRACE_PACKET1,
 	TRACE_PACKET2,
 	TRACE_PACKET3,
 };
 
-#define SEQ_REG(n) (0x300 + (n)*4)
+#define SEQ_REG(n) (0x300 + (n) * 4)
 #define MEM_ACC_SEQ_REG_CFG_START(n) (SEQ_REG(12 + (n)))
 #define MEM_ACC_SEQ_CONST(n) (n)
-#define MEM_ACC_INSTR_COMP(n) (0x67 + ((n)*0x40))
+#define MEM_ACC_INSTR_COMP(n) (0x67 + ((n) * 0x40))
 #define MEM_ACC_SEQ_REG_VAL_START(n) (SEQ_REG(60 + (n)))
 #define SEQ_REG1_MSM8998_V2 0x1048
 #define VERSION_REG 0x0
@@ -119,21 +113,21 @@ enum clk_osm_trace_packet_id
 #define OSM_CORE_TABLE_SIZE 8192
 #define OSM_REG_SIZE 32
 
-#define WDOG_DOMAIN_PSTATE_STATUS 0x1c00
-#define WDOG_PROGRAM_COUNTER 0x1c74
+#define WDOG_DOMAIN_PSTATE_STATUS	0x1c00
+#define WDOG_PROGRAM_COUNTER		0x1c74
 
 #define OSM_CYCLE_COUNTER_USE_XO_EDGE_EN BIT(8)
-#define PLL_MODE 0x0
-#define PLL_L_VAL 0x4
-#define PLL_USER_CTRL 0xC
-#define PLL_CONFIG_CTL_LO 0x10
-#define PLL_TEST_CTL_HI 0x1C
-#define PLL_STATUS 0x2C
-#define PLL_LOCK_DET_MASK BIT(16)
-#define PLL_WAIT_LOCK_TIME_US 10
-#define PLL_WAIT_LOCK_TIME_NS (PLL_WAIT_LOCK_TIME_US * 1000)
+#define PLL_MODE		0x0
+#define PLL_L_VAL		0x4
+#define PLL_USER_CTRL		0xC
+#define PLL_CONFIG_CTL_LO	0x10
+#define PLL_TEST_CTL_HI		0x1C
+#define PLL_STATUS		0x2C
+#define PLL_LOCK_DET_MASK	BIT(16)
+#define PLL_WAIT_LOCK_TIME_US	10
+#define PLL_WAIT_LOCK_TIME_NS	(PLL_WAIT_LOCK_TIME_US * 1000)
 #define PLL_MIN_LVAL 43
-#define L_VAL(freq_data) ((freq_data)&GENMASK(7, 0))
+#define L_VAL(freq_data)	((freq_data) & GENMASK(7, 0))
 
 #define CC_ZERO_BEHAV_CTRL 0x100C
 #define SPM_CC_DCVS_DISABLE 0x1020
@@ -207,14 +201,14 @@ enum clk_osm_trace_packet_id
 #define MAX_MEM_ACC_LEVELS 3
 #define MAX_MEM_ACC_VAL_PER_LEVEL 3
 #define MAX_MEM_ACC_VALUES (MAX_MEM_ACC_LEVELS * \
-														MAX_MEM_ACC_VAL_PER_LEVEL)
+			    MAX_MEM_ACC_VAL_PER_LEVEL)
 #define MEM_ACC_APM_READ_MASK 0xff
 
 #define TRACE_CTRL 0x1F38
 #define TRACE_CTRL_EN_MASK BIT(0)
 #define TRACE_CTRL_ENABLE 1
 #define TRACE_CTRL_DISABLE 0
-#define TRACE_CTRL_ENABLE_WDOG_STATUS BIT(30)
+#define TRACE_CTRL_ENABLE_WDOG_STATUS	BIT(30)
 #define TRACE_CTRL_ENABLE_WDOG_STATUS_MASK BIT(30)
 #define TRACE_CTRL_PACKET_TYPE_MASK BVAL(2, 1, 3)
 #define TRACE_CTRL_PACKET_TYPE_SHIFT 1
@@ -225,50 +219,50 @@ enum clk_osm_trace_packet_id
 #define PERIODIC_TRACE_MAX_NS 21474836475
 #define PERIODIC_TRACE_DEFAULT_NS 1000000
 
-#define PLL_DD_USER_CTL_LO_ENABLE 0x0f04c408
-#define PLL_DD_USER_CTL_LO_DISABLE 0x1f04c41f
-#define PLL_DD_D0_USER_CTL_LO 0x17916208
-#define PLL_DD_D1_USER_CTL_LO 0x17816208
+#define PLL_DD_USER_CTL_LO_ENABLE	0x0f04c408
+#define PLL_DD_USER_CTL_LO_DISABLE	0x1f04c41f
+#define PLL_DD_D0_USER_CTL_LO		0x17916208
+#define PLL_DD_D1_USER_CTL_LO		0x17816208
 
-#define PWRCL_EFUSE_SHIFT 0
-#define PWRCL_EFUSE_MASK 0
-#define PERFCL_EFUSE_SHIFT 29
-#define PERFCL_EFUSE_MASK 0x7
+#define PWRCL_EFUSE_SHIFT	0
+#define PWRCL_EFUSE_MASK	0
+#define PERFCL_EFUSE_SHIFT	29
+#define PERFCL_EFUSE_MASK	0x7
 
-#define MSM8998V1_PWRCL_BOOT_RATE 1478400000
-#define MSM8998V1_PERFCL_BOOT_RATE 1536000000
-#define MSM8998V2_PWRCL_BOOT_RATE 1555200000
-#define MSM8998V2_PERFCL_BOOT_RATE 1728000000
+#define MSM8998V1_PWRCL_BOOT_RATE	1478400000
+#define MSM8998V1_PERFCL_BOOT_RATE	1536000000
+#define MSM8998V2_PWRCL_BOOT_RATE	1555200000
+#define MSM8998V2_PERFCL_BOOT_RATE	1728000000
 
-#define DEBUG_REG_NUM 3
+#define DEBUG_REG_NUM		3
 
 /* ACD registers */
-#define ACD_HW_VERSION 0x0
-#define ACDCR 0x4
-#define ACDTD 0x8
-#define ACDSSCR 0x28
-#define ACD_EXTINT_CFG 0x30
-#define ACD_DCVS_SW 0x34
-#define ACD_GFMUX_CFG 0x3c
-#define ACD_READOUT_CFG 0x48
-#define ACD_AUTOXFER_CFG 0x80
-#define ACD_AUTOXFER 0x84
-#define ACD_AUTOXFER_CTL 0x88
-#define ACD_AUTOXFER_STATUS 0x8c
-#define ACD_WRITE_CTL 0x90
-#define ACD_WRITE_STATUS 0x94
-#define ACD_READOUT 0x98
+#define ACD_HW_VERSION		0x0
+#define ACDCR			0x4
+#define ACDTD			0x8
+#define ACDSSCR			0x28
+#define ACD_EXTINT_CFG		0x30
+#define ACD_DCVS_SW		0x34
+#define ACD_GFMUX_CFG		0x3c
+#define ACD_READOUT_CFG		0x48
+#define ACD_AUTOXFER_CFG	0x80
+#define ACD_AUTOXFER		0x84
+#define ACD_AUTOXFER_CTL	0x88
+#define ACD_AUTOXFER_STATUS	0x8c
+#define ACD_WRITE_CTL		0x90
+#define ACD_WRITE_STATUS	0x94
+#define ACD_READOUT		0x98
 
-#define ACD_MASTER_ONLY_REG_ADDR 0x80
-#define ACD_WRITE_CTL_UPDATE_EN BIT(0)
-#define ACD_WRITE_CTL_SELECT_SHIFT 1
-#define ACD_GFMUX_CFG_SELECT BIT(0)
-#define ACD_AUTOXFER_START_CLEAR 0
-#define ACD_AUTOXFER_START_SET BIT(0)
-#define AUTO_XFER_DONE_MASK BIT(0)
-#define ACD_DCVS_SW_DCVS_IN_PRGR_SET BIT(0)
-#define ACD_DCVS_SW_DCVS_IN_PRGR_CLEAR 0
-#define ACD_LOCAL_TRANSFER_TIMEOUT_NS 500
+#define ACD_MASTER_ONLY_REG_ADDR	0x80
+#define ACD_WRITE_CTL_UPDATE_EN		BIT(0)
+#define ACD_WRITE_CTL_SELECT_SHIFT	1
+#define ACD_GFMUX_CFG_SELECT		BIT(0)
+#define ACD_AUTOXFER_START_CLEAR	0
+#define ACD_AUTOXFER_START_SET		BIT(0)
+#define AUTO_XFER_DONE_MASK		BIT(0)
+#define ACD_DCVS_SW_DCVS_IN_PRGR_SET	BIT(0)
+#define ACD_DCVS_SW_DCVS_IN_PRGR_CLEAR	0
+#define ACD_LOCAL_TRANSFER_TIMEOUT_NS   500
 
 static void __iomem *virt_base;
 static void __iomem *debug_base;
@@ -277,229 +271,72 @@ static void __iomem *debug_base;
 
 #define ACD_REG_RELATIVE_ADDR(addr) (addr / 4)
 #define ACD_REG_RELATIVE_ADDR_BITMASK(addr) \
-	(1 << (ACD_REG_RELATIVE_ADDR(addr)))
+			(1 << (ACD_REG_RELATIVE_ADDR(addr)))
 
-#define FIXDIV(div) (div ? (2 * (div)-1) : (0))
+#define FIXDIV(div) (div ? (2 * (div) - 1) : (0))
 
-#define F(f, s, div, m, n)                                                     \
-	{                                                                            \
-		.freq_hz = (f),                                                            \
-		.src_clk = &s.c,                                                           \
-		.m_val = (m),                                                              \
-		.n_val = ~((n) - (m)) * !!(n),                                             \
-		.d_val = ~(n),                                                             \
-		.div_src_val = BVAL(4, 0, (int)FIXDIV(div)) | BVAL(10, 8, s##_source_val), \
+#define F(f, s, div, m, n) \
+	{ \
+		.freq_hz = (f), \
+		.src_clk = &s.c, \
+		.m_val = (m), \
+		.n_val = ~((n)-(m)) * !!(n), \
+		.d_val = ~(n),\
+		.div_src_val = BVAL(4, 0, (int)FIXDIV(div)) \
+			| BVAL(10, 8, s##_source_val), \
 	}
 
 static u32 seq_instr[] = {
-		0xc2005000,
-		0x2c9e3b21,
-		0xc0ab2cdc,
-		0xc2882525,
-		0x359dc491,
-		0x700a500b,
-		0x5001aefc,
-		0xaefd7000,
-		0x390938c8,
-		0xcb44c833,
-		0xce56cd54,
-		0x341336e0,
-		0xa4baadba,
-		0xb480a493,
-		0x10004000,
-		0x70005001,
-		0x1000500c,
-		0xc792c5a1,
-		0x501625e1,
-		0x3da335a2,
-		0x50170006,
-		0x50150006,
-		0x1000c633,
-		0x1000acb3,
-		0xc422acb4,
-		0xaefc1000,
-		0x700a500b,
-		0x70005001,
-		0x5010aefd,
-		0x5012700b,
-		0xad41700c,
-		0x84e5adb9,
-		0xb3808566,
-		0x239b0003,
-		0x856484e3,
-		0xb9800007,
-		0x2bad0003,
-		0xac3aa20b,
-		0x0003181b,
-		0x0003bb40,
-		0xa30d239b,
-		0x500c181b,
-		0x5011500f,
-		0x181b3413,
-		0x853984b9,
-		0x0003bd80,
-		0xa0012ba4,
-		0x72050803,
-		0x500e1000,
-		0x500c1000,
-		0x1c011c0a,
-		0x3b181c06,
-		0x1c073b43,
-		0x1c061000,
-		0x1c073983,
-		0x1c02500c,
-		0x10001c0a,
-		0x70015002,
-		0x81031000,
-		0x70025003,
-		0x70035004,
-		0x3b441000,
-		0x81553985,
-		0x70025003,
-		0x50054003,
-		0xa1467009,
-		0x0003b1c0,
-		0x4005238b,
-		0x835a1000,
-		0x855c84db,
-		0x1000a51f,
-		0x84de835d,
-		0xa52c855c,
-		0x50061000,
-		0x39cd3a4c,
-		0x3ad03a8f,
-		0x10004006,
-		0x70065007,
-		0xa00f2c12,
-		0x08034007,
-		0xaefc7205,
-		0xaefd700d,
-		0xa9641000,
-		0x40071c1a,
-		0x700daefc,
-		0x1000aefd,
-		0x70065007,
-		0x50101c16,
-		0x40075012,
-		0x700daefc,
-		0x2411aefd,
-		0xa8211000,
-		0x0803a00f,
-		0x500c7005,
-		0x1c1591e0,
-		0x500f5014,
-		0x10005011,
-		0x500c2bd4,
-		0x0803a00f,
-		0x10007205,
-		0xa00fa9d1,
-		0x0803a821,
-		0xa9d07005,
-		0x91e0500c,
-		0x500f1c15,
-		0x10005011,
-		0x1c162bce,
-		0x50125010,
-		0xa022a82a,
-		0x70050803,
-		0x1c1591df,
-		0x5011500f,
-		0x5014500c,
-		0x0803a00f,
-		0x10007205,
-		0x501391a4,
-		0x22172217,
-		0x70075008,
-		0xa9634008,
-		0x1c1a0006,
-		0x70085009,
-		0x10004009,
-		0x00008ed9,
-		0x3e05c8dd,
-		0x1c033604,
-		0xabaf1000,
-		0x856284e1,
-		0x0003bb80,
-		0x1000239f,
-		0x0803a037,
-		0x10007205,
-		0x8dc61000,
-		0x38a71c2a,
-		0x1c2a8dc4,
-		0x100038a6,
-		0x1c2a8dc5,
-		0x8dc73867,
-		0x38681c2a,
-		0x8c491000,
-		0x8d4b8cca,
-		0x10001c00,
-		0x8ccd8c4c,
-		0x1c008d4e,
-		0x8c4f1000,
-		0x8d518cd0,
-		0x10001c00,
-		0xa759a79a,
-		0x1000a718,
-		0xbf80af9b,
-		0x00001000,
+	0xc2005000, 0x2c9e3b21, 0xc0ab2cdc, 0xc2882525, 0x359dc491,
+	0x700a500b, 0x5001aefc, 0xaefd7000, 0x390938c8, 0xcb44c833,
+	0xce56cd54, 0x341336e0, 0xa4baadba, 0xb480a493, 0x10004000,
+	0x70005001, 0x1000500c, 0xc792c5a1, 0x501625e1, 0x3da335a2,
+	0x50170006, 0x50150006, 0x1000c633, 0x1000acb3, 0xc422acb4,
+	0xaefc1000, 0x700a500b, 0x70005001, 0x5010aefd, 0x5012700b,
+	0xad41700c, 0x84e5adb9, 0xb3808566, 0x239b0003, 0x856484e3,
+	0xb9800007, 0x2bad0003, 0xac3aa20b, 0x0003181b, 0x0003bb40,
+	0xa30d239b, 0x500c181b, 0x5011500f, 0x181b3413, 0x853984b9,
+	0x0003bd80, 0xa0012ba4, 0x72050803, 0x500e1000, 0x500c1000,
+	0x1c011c0a, 0x3b181c06, 0x1c073b43, 0x1c061000, 0x1c073983,
+	0x1c02500c, 0x10001c0a, 0x70015002, 0x81031000, 0x70025003,
+	0x70035004, 0x3b441000, 0x81553985, 0x70025003, 0x50054003,
+	0xa1467009, 0x0003b1c0, 0x4005238b, 0x835a1000, 0x855c84db,
+	0x1000a51f, 0x84de835d, 0xa52c855c, 0x50061000, 0x39cd3a4c,
+	0x3ad03a8f, 0x10004006, 0x70065007, 0xa00f2c12, 0x08034007,
+	0xaefc7205, 0xaefd700d, 0xa9641000, 0x40071c1a, 0x700daefc,
+	0x1000aefd, 0x70065007, 0x50101c16, 0x40075012, 0x700daefc,
+	0x2411aefd, 0xa8211000, 0x0803a00f, 0x500c7005, 0x1c1591e0,
+	0x500f5014, 0x10005011, 0x500c2bd4, 0x0803a00f, 0x10007205,
+	0xa00fa9d1, 0x0803a821, 0xa9d07005, 0x91e0500c, 0x500f1c15,
+	0x10005011, 0x1c162bce, 0x50125010, 0xa022a82a, 0x70050803,
+	0x1c1591df, 0x5011500f, 0x5014500c, 0x0803a00f, 0x10007205,
+	0x501391a4, 0x22172217, 0x70075008, 0xa9634008, 0x1c1a0006,
+	0x70085009, 0x10004009, 0x00008ed9, 0x3e05c8dd, 0x1c033604,
+	0xabaf1000, 0x856284e1, 0x0003bb80, 0x1000239f, 0x0803a037,
+	0x10007205, 0x8dc61000, 0x38a71c2a, 0x1c2a8dc4, 0x100038a6,
+	0x1c2a8dc5, 0x8dc73867, 0x38681c2a, 0x8c491000, 0x8d4b8cca,
+	0x10001c00, 0x8ccd8c4c, 0x1c008d4e, 0x8c4f1000, 0x8d518cd0,
+	0x10001c00, 0xa759a79a, 0x1000a718, 0xbf80af9b, 0x00001000,
 };
 
 static u32 seq_br_instr[] = {
-		0x248,
-		0x20e,
-		0x21c,
-		0xf6,
-		0x112,
-		0x11c,
-		0xe4,
-		0xea,
-		0xc6,
-		0xd6,
-		0x126,
-		0x108,
-		0x184,
-		0x1a8,
-		0x1b0,
-		0x134,
-		0x158,
-		0x16e,
-		0x14a,
-		0xc2,
-		0x190,
-		0x1d2,
-		0x1cc,
-		0x1d4,
-		0x1e8,
-		0x0,
-		0x1f6,
-		0x32,
-		0x66,
-		0xb0,
-		0xa6,
-		0x1fc,
-		0x3c,
-		0x44,
-		0x5c,
-		0x60,
-		0x204,
-		0x30,
-		0x22a,
-		0x234,
-		0x23e,
-		0x0,
-		0x250,
-		0x0,
-		0x0,
-		0x9a,
-		0x20c,
+	0x248, 0x20e, 0x21c, 0xf6, 0x112,
+	0x11c, 0xe4, 0xea, 0xc6, 0xd6,
+	0x126, 0x108, 0x184, 0x1a8, 0x1b0,
+	0x134, 0x158, 0x16e, 0x14a, 0xc2,
+	0x190, 0x1d2, 0x1cc, 0x1d4, 0x1e8,
+	0x0, 0x1f6, 0x32, 0x66, 0xb0,
+	0xa6, 0x1fc, 0x3c, 0x44, 0x5c,
+	0x60, 0x204, 0x30, 0x22a, 0x234,
+	0x23e, 0x0, 0x250, 0x0, 0x0, 0x9a,
+	0x20c,
 };
 
 DEFINE_EXT_CLK(xo_ao, NULL);
 DEFINE_EXT_CLK(sys_apcsaux_clk_gcc, NULL);
 DEFINE_EXT_CLK(lmh_lite_clk_src, NULL);
 
-struct osm_entry
-{
+struct osm_entry {
 	u16 virtual_corner;
 	u16 open_loop_volt;
 	u32 freq_data;
@@ -509,15 +346,14 @@ struct osm_entry
 };
 
 const char *clk_panic_reg_names[] = {"WDOG_DOMAIN_PSTATE_STATUS",
-																		 "WDOG_PROGRAM_COUNTER",
-																		 "APM_STATUS"};
+				     "WDOG_PROGRAM_COUNTER",
+				     "APM_STATUS"};
 const int clk_panic_reg_offsets[] = {WDOG_DOMAIN_PSTATE_STATUS,
-																		 WDOG_PROGRAM_COUNTER};
+				     WDOG_PROGRAM_COUNTER};
 
 static struct dentry *osm_debugfs_base;
 
-struct clk_osm
-{
+struct clk_osm {
 	struct clk c;
 	struct osm_entry osm_table[OSM_TABLE_SIZE];
 	struct dentry *debugfs;
@@ -585,7 +421,7 @@ static bool msm8998_v1;
 static bool msm8998_v2;
 
 static inline void clk_osm_masked_write_reg(struct clk_osm *c, u32 val,
-																						u32 offset, u32 mask)
+					    u32 offset, u32 mask)
 {
 	u32 val2, orig_val;
 
@@ -620,11 +456,11 @@ static inline int clk_osm_mb(struct clk_osm *c, int base)
 static inline int clk_osm_acd_mb(struct clk_osm *c)
 {
 	return readl_relaxed_no_log((char *)c->vbases[ACD_BASE] +
-															ACD_HW_VERSION);
+				    ACD_HW_VERSION);
 }
 
 static inline void clk_osm_acd_master_write_reg(struct clk_osm *c,
-																								u32 val, u32 offset)
+						u32 val, u32 offset)
 {
 	writel_relaxed(val, (char *)c->vbases[ACD_BASE] + offset);
 }
@@ -634,24 +470,23 @@ static int clk_osm_acd_local_read_reg(struct clk_osm *c, u32 offset)
 	u32 reg = 0;
 	int timeout;
 
-	if (offset >= ACD_MASTER_ONLY_REG_ADDR)
-	{
+	if (offset >= ACD_MASTER_ONLY_REG_ADDR) {
 		pr_err("ACD register at offset=0x%x not locally readable\n",
-					 offset);
+		       offset);
 		return -EINVAL;
 	}
 
 	/* Set select field in read control register */
 	writel_relaxed(ACD_REG_RELATIVE_ADDR(offset),
-								 (char *)c->vbases[ACD_BASE] + ACD_READOUT_CFG);
+		       (char *)c->vbases[ACD_BASE] + ACD_READOUT_CFG);
 
 	/* Clear write control register */
 	writel_relaxed(reg, (char *)c->vbases[ACD_BASE] + ACD_WRITE_CTL);
 
 	/* Set select and update_en fields in write control register */
 	reg = (ACD_REG_RELATIVE_ADDR(ACD_READOUT_CFG)
-				 << ACD_WRITE_CTL_SELECT_SHIFT) |
-				ACD_WRITE_CTL_UPDATE_EN;
+	       << ACD_WRITE_CTL_SELECT_SHIFT)
+		| ACD_WRITE_CTL_UPDATE_EN;
 	writel_relaxed(reg, (char *)c->vbases[ACD_BASE] + ACD_WRITE_CTL);
 
 	/* Ensure writes complete before polling */
@@ -659,22 +494,22 @@ static int clk_osm_acd_local_read_reg(struct clk_osm *c, u32 offset)
 
 	/* Poll write status register */
 	for (timeout = ACD_LOCAL_TRANSFER_TIMEOUT_NS; timeout > 0;
-			 timeout -= 100)
-	{
-		reg = readl_relaxed((char *)c->vbases[ACD_BASE] + ACD_WRITE_STATUS);
+	     timeout -= 100) {
+		reg = readl_relaxed((char *)c->vbases[ACD_BASE]
+				    + ACD_WRITE_STATUS);
 		if ((reg & (ACD_REG_RELATIVE_ADDR_BITMASK(ACD_READOUT_CFG))))
 			break;
 		ndelay(100);
 	}
 
-	if (!timeout)
-	{
+	if (!timeout) {
 		pr_err("local read timed out, offset=0x%x status=0x%x\n",
-					 offset, reg);
+		       offset, reg);
 		return -ETIMEDOUT;
 	}
 
-	reg = readl_relaxed((char *)c->vbases[ACD_BASE] + ACD_READOUT);
+	reg = readl_relaxed((char *)c->vbases[ACD_BASE]
+			    + ACD_READOUT);
 	return reg;
 }
 
@@ -683,10 +518,9 @@ static int clk_osm_acd_local_write_reg(struct clk_osm *c, u32 val, u32 offset)
 	u32 reg = 0;
 	int timeout;
 
-	if (offset >= ACD_MASTER_ONLY_REG_ADDR)
-	{
+	if (offset >= ACD_MASTER_ONLY_REG_ADDR) {
 		pr_err("ACD register at offset=0x%x not transferrable\n",
-					 offset);
+		       offset);
 		return -EINVAL;
 	}
 
@@ -694,7 +528,8 @@ static int clk_osm_acd_local_write_reg(struct clk_osm *c, u32 val, u32 offset)
 	writel_relaxed(reg, (char *)c->vbases[ACD_BASE] + ACD_WRITE_CTL);
 
 	/* Set select and update_en fields in write control register */
-	reg = (ACD_REG_RELATIVE_ADDR(offset) << ACD_WRITE_CTL_SELECT_SHIFT) | ACD_WRITE_CTL_UPDATE_EN;
+	reg = (ACD_REG_RELATIVE_ADDR(offset) << ACD_WRITE_CTL_SELECT_SHIFT)
+		| ACD_WRITE_CTL_UPDATE_EN;
 	writel_relaxed(reg, (char *)c->vbases[ACD_BASE] + ACD_WRITE_CTL);
 
 	/* Ensure writes complete before polling */
@@ -702,18 +537,17 @@ static int clk_osm_acd_local_write_reg(struct clk_osm *c, u32 val, u32 offset)
 
 	/* Poll write status register */
 	for (timeout = ACD_LOCAL_TRANSFER_TIMEOUT_NS; timeout > 0;
-			 timeout -= 100)
-	{
-		reg = readl_relaxed((char *)c->vbases[ACD_BASE] + ACD_WRITE_STATUS);
+	     timeout -= 100) {
+		reg = readl_relaxed((char *)c->vbases[ACD_BASE]
+				    + ACD_WRITE_STATUS);
 		if ((reg & (ACD_REG_RELATIVE_ADDR_BITMASK(offset))))
 			break;
 		ndelay(100);
 	}
 
-	if (!timeout)
-	{
+	if (!timeout) {
 		pr_err("local write timed out, offset=0x%x val=0x%x status=0x%x\n",
-					 offset, val, reg);
+		       offset, val, reg);
 		return -ETIMEDOUT;
 	}
 
@@ -721,7 +555,7 @@ static int clk_osm_acd_local_write_reg(struct clk_osm *c, u32 val, u32 offset)
 }
 
 static int clk_osm_acd_master_write_through_reg(struct clk_osm *c,
-																								u32 val, u32 offset)
+						u32 val, u32 offset)
 {
 	writel_relaxed(val, (char *)c->vbases[ACD_BASE] + offset);
 
@@ -746,29 +580,28 @@ static int clk_osm_acd_auto_local_write_reg(struct clk_osm *c, u32 mask)
 
 	/* Clear start field in auto-transfer register */
 	writel_relaxed(ACD_AUTOXFER_START_CLEAR,
-								 (char *)c->vbases[ACD_BASE] + ACD_AUTOXFER);
+		       (char *)c->vbases[ACD_BASE] + ACD_AUTOXFER);
 
 	/* Set start field in auto-transfer register */
 	writel_relaxed(ACD_AUTOXFER_START_SET,
-								 (char *)c->vbases[ACD_BASE] + ACD_AUTOXFER);
+		       (char *)c->vbases[ACD_BASE] + ACD_AUTOXFER);
 
 	/* Ensure writes complete before polling */
 	clk_osm_acd_mb(c);
 
 	/* Poll auto-transfer status register */
 	for (timeout = ACD_LOCAL_TRANSFER_TIMEOUT_NS * numregs;
-			 timeout > 0; timeout -= 100)
-	{
-		reg = readl_relaxed((char *)c->vbases[ACD_BASE] + ACD_AUTOXFER_STATUS);
+	     timeout > 0; timeout -= 100) {
+		reg = readl_relaxed((char *)c->vbases[ACD_BASE]
+				    + ACD_AUTOXFER_STATUS);
 		if (reg & AUTO_XFER_DONE_MASK)
 			break;
 		ndelay(100);
 	}
 
-	if (!timeout)
-	{
+	if (!timeout) {
 		pr_err("local register auto-transfer timed out, mask=0x%x registers=%d status=0x%x\n",
-					 mask, numregs, reg);
+		       mask, numregs, reg);
 		return -ETIMEDOUT;
 	}
 
@@ -815,20 +648,20 @@ static int clk_osm_acd_init(struct clk_osm *c)
 
 	/* Switch CPUSS clock source to ACD clock */
 	rc = clk_osm_acd_master_write_through_reg(c, ACD_GFMUX_CFG_SELECT,
-																						ACD_GFMUX_CFG);
+						  ACD_GFMUX_CFG);
 	if (rc)
 		return rc;
 
 	/* Program ACD_DCVS_SW */
 	rc = clk_osm_acd_master_write_through_reg(c,
-																						ACD_DCVS_SW_DCVS_IN_PRGR_SET,
-																						ACD_DCVS_SW);
+				  ACD_DCVS_SW_DCVS_IN_PRGR_SET,
+				  ACD_DCVS_SW);
 	if (rc)
 		return rc;
 
 	rc = clk_osm_acd_master_write_through_reg(c,
-																						ACD_DCVS_SW_DCVS_IN_PRGR_CLEAR,
-																						ACD_DCVS_SW);
+				  ACD_DCVS_SW_DCVS_IN_PRGR_CLEAR,
+				  ACD_DCVS_SW);
 	if (rc)
 		return rc;
 
@@ -836,7 +669,7 @@ static int clk_osm_acd_init(struct clk_osm *c)
 
 	/* Program final ACD external interface configuration register */
 	rc = clk_osm_acd_master_write_through_reg(c, c->acd_extint1_cfg,
-																						ACD_EXTINT_CFG);
+						  ACD_EXTINT_CFG);
 	if (rc)
 		return rc;
 
@@ -891,10 +724,8 @@ static long clk_osm_round_rate(struct clk *c, unsigned long rate)
 	if (!rate)
 		return c->fmax[0];
 
-	for (i = 0; i < c->num_fmax; i++)
-	{
-		if (is_better_rate(rate, rrate, c->fmax[i]))
-		{
+	for (i = 0; i < c->num_fmax; i++) {
+		if (is_better_rate(rate, rrate, c->fmax[i])) {
 			rrate = c->fmax[i];
 			if (rrate == rate)
 				break;
@@ -910,18 +741,16 @@ static int clk_osm_search_table(struct osm_entry *table, int entries, long rate)
 	int core_count;
 
 	for (quad_core_index = 0; quad_core_index < entries;
-			 quad_core_index++)
-	{
+	     quad_core_index++) {
 		core_count =
-				CORE_COUNT_VAL(table[quad_core_index].freq_data);
+			CORE_COUNT_VAL(table[quad_core_index].freq_data);
 		if (rate == table[quad_core_index].frequency &&
-				core_count == SINGLE_CORE)
-		{
+		    core_count == SINGLE_CORE) {
 			single_core_index = quad_core_index;
 			continue;
 		}
 		if (rate == table[quad_core_index].frequency &&
-				core_count == MAX_CORE_COUNT)
+		    core_count == MAX_CORE_COUNT)
 			return quad_core_index;
 	}
 	if (single_core_index)
@@ -932,8 +761,7 @@ static int clk_osm_search_table(struct osm_entry *table, int entries, long rate)
 
 #ifdef CONFIG_SEC_DEBUG_APPS_CLK_LOGGING
 
-typedef struct
-{
+typedef struct {
 	uint64_t ktime;
 	uint64_t qtime;
 	uint64_t rate;
@@ -941,20 +769,15 @@ typedef struct
 
 #define MAX_CLK_LOG_CNT (10)
 
-typedef struct
-{
+typedef struct {
 	uint32_t max_cnt;
 	uint32_t index;
 	apps_clk_log_t log[MAX_CLK_LOG_CNT];
 } cpuclk_log_t;
 
 cpuclk_log_t cpuclk_log[2] = {
-		[0] = {
-				.max_cnt = MAX_CLK_LOG_CNT,
-		},
-		[1] = {
-				.max_cnt = MAX_CLK_LOG_CNT,
-		},
+	[0] = {.max_cnt = MAX_CLK_LOG_CNT,},
+	[1] = {.max_cnt = MAX_CLK_LOG_CNT,},
 };
 
 static void clk_osm_add_log(struct clk_osm *cpuclk, unsigned long rate)
@@ -964,9 +787,8 @@ static void clk_osm_add_log(struct clk_osm *cpuclk, unsigned long rate)
 	uint64_t idx = 0;
 
 	if (!WARN(cpuclk->cluster_num >= 2,
-						"%s : invalid cluster_num(%u), dbg_name(%s)\n",
-						__func__, cpuclk->cluster_num, cpuclk->c.dbg_name))
-	{
+		"%s : invalid cluster_num(%u), dbg_name(%s)\n",
+		__func__, cpuclk->cluster_num, cpuclk->c.dbg_name)) {
 		clk = &cpuclk_log[cpuclk->cluster_num];
 		idx = clk->index;
 		log = &clk->log[idx];
@@ -977,7 +799,7 @@ static void clk_osm_add_log(struct clk_osm *cpuclk, unsigned long rate)
 	}
 }
 
-void *clk_osm_get_log_addr(void)
+void* clk_osm_get_log_addr(void)
 {
 	return (void *)&cpuclk_log;
 }
@@ -992,40 +814,36 @@ static int clk_osm_set_rate(struct clk *c, unsigned long rate)
 
 	r_rate = clk_osm_round_rate(c, rate);
 
-	if (rate != r_rate)
-	{
+	if (rate != r_rate) {
 		pr_err("invalid rate requested rate=%ld\n", rate);
 		return -EINVAL;
 	}
 
 	/* Convert rate to table index */
 	index = clk_osm_search_table(cpuclk->osm_table,
-															 cpuclk->num_entries, r_rate);
-	if (index < 0)
-	{
+				     cpuclk->num_entries, r_rate);
+	if (index < 0) {
 		pr_err("cannot set cluster %u to %lu\n",
-					 cpuclk->cluster_num, rate);
+		       cpuclk->cluster_num, rate);
 		return -EINVAL;
 	}
 	pr_debug("rate: %lu --> index %d\n", rate, index);
 
-	if (cpuclk->llm_sw_overr[0])
-	{
+	if (cpuclk->llm_sw_overr[0]) {
 		clk_osm_write_reg(cpuclk, cpuclk->llm_sw_overr[0],
-											LLM_SW_OVERRIDE_REG);
+				  LLM_SW_OVERRIDE_REG);
 		clk_osm_write_reg(cpuclk, cpuclk->llm_sw_overr[1],
-											LLM_SW_OVERRIDE_REG);
+				  LLM_SW_OVERRIDE_REG);
 		udelay(1);
 	}
 
 	/* Choose index and send request to OSM hardware */
 	clk_osm_write_reg(cpuclk, index, DCVS_PERF_STATE_DESIRED_REG);
 
-	if (cpuclk->llm_sw_overr[0])
-	{
+	if (cpuclk->llm_sw_overr[0]) {
 		udelay(1);
 		clk_osm_write_reg(cpuclk, cpuclk->llm_sw_overr[2],
-											LLM_SW_OVERRIDE_REG);
+				  LLM_SW_OVERRIDE_REG);
 	}
 
 	/* Make sure the write goes through before proceeding */
@@ -1042,10 +860,9 @@ static int clk_osm_enable(struct clk *c)
 	int rc;
 
 	rc = clk_osm_acd_init(cpuclk);
-	if (rc)
-	{
+	if (rc) {
 		pr_err("Failed to initialize ACD for cluster %d, rc=%d\n",
-					 cpuclk->cluster_num, rc);
+						cpuclk->cluster_num, rc);
 		return rc;
 	}
 
@@ -1066,177 +883,92 @@ static int clk_osm_enable(struct clk *c)
 }
 
 static struct clk_ops clk_ops_cpu_osm = {
-		.enable = clk_osm_enable,
-		.set_rate = clk_osm_set_rate,
-		.round_rate = clk_osm_round_rate,
-		.list_rate = clk_osm_list_rate,
-		.handoff = clk_osm_handoff,
+	.enable = clk_osm_enable,
+	.set_rate = clk_osm_set_rate,
+	.round_rate = clk_osm_round_rate,
+	.list_rate = clk_osm_list_rate,
+	.handoff = clk_osm_handoff,
 };
 
 static struct regulator *vdd_pwrcl;
 static struct regulator *vdd_perfcl;
 
 static struct clk_freq_tbl ftbl_osm_clk_src[] = {
-		F(200000000, lmh_lite_clk_src, 1.5, 0, 0),
-		F_END};
+	F(  200000000,    lmh_lite_clk_src,    1.5,    0,     0),
+	F_END
+};
 
 static struct rcg_clk osm_clk_src = {
-		.cmd_rcgr_reg = APCS_COMMON_LMH_CMD_RCGR,
-		.set_rate = set_rate_hid,
-		.freq_tbl = ftbl_osm_clk_src,
-		.current_freq = &rcg_dummy_freq,
-		.base = &virt_base,
-		.c = {
-				.dbg_name = "osm_clk_src",
-				.ops = &clk_ops_rcg,
-				CLK_INIT(osm_clk_src.c),
-		},
+	.cmd_rcgr_reg = APCS_COMMON_LMH_CMD_RCGR,
+	.set_rate = set_rate_hid,
+	.freq_tbl = ftbl_osm_clk_src,
+	.current_freq = &rcg_dummy_freq,
+	.base = &virt_base,
+	.c = {
+		.dbg_name = "osm_clk_src",
+		.ops = &clk_ops_rcg,
+		CLK_INIT(osm_clk_src.c),
+	},
 };
 
 static struct clk_osm pwrcl_clk = {
-		.cluster_num = 0,
-		.cpu_reg_mask = 0x3,
-		.c = {
-				.dbg_name = "pwrcl_clk",
-				.ops = &clk_ops_cpu_osm,
-				.parent = &xo_ao.c,
-				CLK_INIT(pwrcl_clk.c),
-		},
+	.cluster_num = 0,
+	.cpu_reg_mask = 0x3,
+	.c = {
+		.dbg_name = "pwrcl_clk",
+		.ops = &clk_ops_cpu_osm,
+		.parent = &xo_ao.c,
+		CLK_INIT(pwrcl_clk.c),
+	},
 };
 
 static struct clk_osm perfcl_clk = {
-		.cluster_num = 1,
-		.cpu_reg_mask = 0x103,
-		.c = {
-				.dbg_name = "perfcl_clk",
-				.ops = &clk_ops_cpu_osm,
-				.parent = &xo_ao.c,
-				CLK_INIT(perfcl_clk.c),
-		},
+	.cluster_num = 1,
+	.cpu_reg_mask = 0x103,
+	.c = {
+		.dbg_name = "perfcl_clk",
+		.ops = &clk_ops_cpu_osm,
+		.parent = &xo_ao.c,
+		CLK_INIT(perfcl_clk.c),
+	},
 };
 
 static struct clk_ops clk_ops_cpu_dbg_mux;
 
 static struct mux_clk cpu_debug_mux = {
-		.offset = 0x0,
-		.mask = 0x3,
-		.shift = 8,
-		.ops = &mux_reg_ops,
-		MUX_SRC_LIST(
-				{&pwrcl_clk.c, 0x00},
-				{&perfcl_clk.c, 0x01}, ),
-		.base = &debug_base,
-		.c = {
-				.dbg_name = "cpu_debug_mux",
-				.ops = &clk_ops_cpu_dbg_mux,
-				.flags = CLKFLAG_NO_RATE_CACHE,
-				CLK_INIT(cpu_debug_mux.c),
-		},
+	.offset = 0x0,
+	.mask = 0x3,
+	.shift = 8,
+	.ops = &mux_reg_ops,
+	MUX_SRC_LIST(
+		{ &pwrcl_clk.c, 0x00 },
+		{ &perfcl_clk.c, 0x01 },
+	),
+	.base = &debug_base,
+	.c = {
+		.dbg_name = "cpu_debug_mux",
+		.ops = &clk_ops_cpu_dbg_mux,
+		.flags = CLKFLAG_NO_RATE_CACHE,
+		CLK_INIT(cpu_debug_mux.c),
+	},
 };
 
 static struct clk_lookup cpu_clocks_osm[] = {
-		CLK_LIST(pwrcl_clk),
-		CLK_LIST(perfcl_clk),
-		CLK_LIST(sys_apcsaux_clk_gcc),
-		CLK_LIST(xo_ao),
-		CLK_LIST(osm_clk_src),
-		CLK_LIST(cpu_debug_mux),
+	CLK_LIST(pwrcl_clk),
+	CLK_LIST(perfcl_clk),
+	CLK_LIST(sys_apcsaux_clk_gcc),
+	CLK_LIST(xo_ao),
+	CLK_LIST(osm_clk_src),
+	CLK_LIST(cpu_debug_mux),
 };
-
-#ifdef CONFIG_VOLTAGE_CONTROL
-extern int cpr_regulator_get_corner_voltage(struct regulator_dev *rdev,
-																						int corner);
-extern int cpr_regulator_set_corner_voltage(struct regulator_dev *rdev,
-																						int corner, int volt);
-
-ssize_t cpu_clock_get_vdd(char *buf)
-{
-	ssize_t count = 0;
-	int i, uv;
-
-	if (!buf)
-		return 0;
-
-	for (i = 1; i < pwrcl_clk.c.num_fmax; i++)
-	{
-		uv = cpr_regulator_get_corner_voltage(
-				pwrcl_clk.vdd_reg->rdev,
-				pwrcl_clk.c.vdd_class->vdd_uv[i]);
-		if (uv < 0)
-			return 0;
-		count += sprintf(buf + count, "POWER: %lumhz: %d mV\n",
-										 pwrcl_clk.c.fmax[i] / 1000000,
-										 uv / 1000);
-	}
-
-	for (i = 1; i < perfcl_clk.c.num_fmax; i++)
-	{
-		uv = cpr_regulator_get_corner_voltage(
-				perfcl_clk.vdd_reg->rdev,
-				perfcl_clk.c.vdd_class->vdd_uv[i]);
-		if (uv < 0)
-			return 0;
-		count += sprintf(buf + count, "PERF: %lumhz: %d mV\n",
-										 perfcl_clk.c.fmax[i] / 1000000,
-										 uv / 1000);
-	}
-
-	return count;
-}
-
-ssize_t cpu_clock_set_vdd(const char *buf, size_t count)
-{
-	int i, mv, ret;
-	char line[32];
-
-	if (!buf)
-		return -EINVAL;
-
-	for (i = 1; i < pwrcl_clk.c.num_fmax; i++)
-	{
-		ret = sscanf(buf, "%d", &mv);
-		if (ret != 1)
-			return -EINVAL;
-
-		ret = cpr_regulator_set_corner_voltage(
-				pwrcl_clk.vdd_reg->rdev,
-				pwrcl_clk.c.vdd_class->vdd_uv[i],
-				mv * 1000);
-		if (ret < 0)
-			return ret;
-
-		ret = sscanf(buf, "%s", line);
-		buf += strlen(line) + 1;
-	}
-
-	for (i = 1; i < perfcl_clk.c.num_fmax; i++)
-	{
-		ret = sscanf(buf, "%d", &mv);
-		if (ret != 1)
-			return -EINVAL;
-
-		ret = cpr_regulator_set_corner_voltage(
-				perfcl_clk.vdd_reg->rdev,
-				perfcl_clk.c.vdd_class->vdd_uv[i],
-				mv * 1000);
-		if (ret < 0)
-			return ret;
-
-		ret = sscanf(buf, "%s", line);
-		buf += strlen(line) + 1;
-	}
-
-	return count;
-}
-#endif
 
 static unsigned long cpu_dbg_mux_get_rate(struct clk *clk)
 {
 	/* Account for the divider between the clock and the debug mux */
 	if (!strcmp(clk->parent->dbg_name, "pwrcl_clk"))
-		return clk->rate / 4;
+		return clk->rate/4;
 	else if (!strcmp(clk->parent->dbg_name, "perfcl_clk"))
-		return clk->rate / 8;
+		return clk->rate/8;
 	return clk->rate;
 }
 
@@ -1247,32 +979,31 @@ static void clk_osm_print_osm_table(struct clk_osm *c)
 	u32 pll_src, pll_div, lval, core_count;
 
 	pr_debug("Index, Frequency, VC, OLV (mv), Core Count, PLL Src, PLL Div, L-Val, ACC Level\n");
-	for (i = 0; i < c->num_entries; i++)
-	{
+	for (i = 0; i < c->num_entries; i++) {
 		pll_src = (table[i].freq_data & GENMASK(27, 26)) >> 26;
 		pll_div = (table[i].freq_data & GENMASK(25, 24)) >> 24;
 		lval = L_VAL(table[i].freq_data);
 		core_count = (table[i].freq_data & GENMASK(18, 16)) >> 16;
 
 		pr_debug("%3d, %11lu, %2u, %5u, %2u, %6u, %8u, %7u, %5u\n",
-						 i,
-						 table[i].frequency,
-						 table[i].virtual_corner,
-						 table[i].open_loop_volt,
-						 core_count,
-						 pll_src,
-						 pll_div,
-						 lval,
-						 table[i].spare_data);
+			i,
+			table[i].frequency,
+			table[i].virtual_corner,
+			table[i].open_loop_volt,
+			core_count,
+			pll_src,
+			pll_div,
+			lval,
+			table[i].spare_data);
 	}
 	pr_debug("APM threshold corner=%d, crossover corner=%d\n",
-					 c->apm_threshold_vc, c->apm_crossover_vc);
+		 c->apm_threshold_vc, c->apm_crossover_vc);
 	pr_debug("MEM-ACC threshold corner=%d, crossover corner=%d\n",
-					 c->mem_acc_threshold_vc, c->mem_acc_crossover_vc);
+		 c->mem_acc_threshold_vc, c->mem_acc_crossover_vc);
 }
 
 static int clk_osm_get_lut(struct platform_device *pdev,
-													 struct clk_osm *c, char *prop_name)
+			   struct clk_osm *c, char *prop_name)
 {
 	struct clk *clk = &c->c;
 	struct device_node *of = pdev->dev.of_node;
@@ -1284,15 +1015,13 @@ static int clk_osm_get_lut(struct platform_device *pdev,
 	bool last_entry = false;
 	unsigned long abs_fmax = 0;
 
-	if (!of_find_property(of, prop_name, &prop_len))
-	{
+	if (!of_find_property(of, prop_name, &prop_len)) {
 		dev_err(&pdev->dev, "missing %s\n", prop_name);
 		return -EINVAL;
 	}
 
 	total_elems = prop_len / sizeof(u32);
-	if (total_elems % NUM_FIELDS)
-	{
+	if (total_elems % NUM_FIELDS) {
 		dev_err(&pdev->dev, "bad length %d\n", prop_len);
 		return -EINVAL;
 	}
@@ -1300,7 +1029,7 @@ static int clk_osm_get_lut(struct platform_device *pdev,
 	num_rows = total_elems / NUM_FIELDS;
 
 	fmax_temp = devm_kzalloc(&pdev->dev, num_rows * sizeof(unsigned long),
-													 GFP_KERNEL);
+				 GFP_KERNEL);
 	if (!fmax_temp)
 		return -ENOMEM;
 
@@ -1309,23 +1038,20 @@ static int clk_osm_get_lut(struct platform_device *pdev,
 		return -ENOMEM;
 
 	rc = of_property_read_u32_array(of, prop_name, array, total_elems);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to parse OSM table, rc=%d\n", rc);
 		goto exit;
 	}
 
 	pr_debug("%s: Entries in Table: %d\n", __func__, num_rows);
 	c->num_entries = num_rows;
-	if (c->num_entries > OSM_TABLE_SIZE)
-	{
+	if (c->num_entries > OSM_TABLE_SIZE) {
 		pr_err("LUT entries %d exceed maximum size %d\n",
-					 c->num_entries, OSM_TABLE_SIZE);
+		       c->num_entries, OSM_TABLE_SIZE);
 		return -EINVAL;
 	}
 
-	for (i = 0, j = 0, k = 0; j < OSM_TABLE_SIZE; j++)
-	{
+	for (i = 0, j = 0, k = 0; j < OSM_TABLE_SIZE; j++) {
 		c->osm_table[j].frequency = array[i + FREQ];
 		c->osm_table[j].freq_data = array[i + FREQ_DATA];
 		c->osm_table[j].override_data = array[i + PLL_OVERRIDES];
@@ -1333,23 +1059,21 @@ static int clk_osm_get_lut(struct platform_device *pdev,
 		/* Voltage corners are 0 based in the OSM LUT */
 		c->osm_table[j].virtual_corner = array[i + VIRTUAL_CORNER] - 1;
 		pr_debug("index=%d freq=%ld virtual_corner=%d freq_data=0x%x override_data=0x%x spare_data=0x%x\n",
-						 j, c->osm_table[j].frequency,
-						 c->osm_table[j].virtual_corner,
-						 c->osm_table[j].freq_data,
-						 c->osm_table[j].override_data,
-						 c->osm_table[j].spare_data);
+			 j, c->osm_table[j].frequency,
+			 c->osm_table[j].virtual_corner,
+			 c->osm_table[j].freq_data,
+			 c->osm_table[j].override_data,
+			 c->osm_table[j].spare_data);
 
 		data = (array[i + FREQ_DATA] & GENMASK(18, 16)) >> 16;
-		if (!last_entry && data == MAX_CORE_COUNT)
-		{
+		if (!last_entry && data == MAX_CORE_COUNT) {
 			fmax_temp[k] = array[i];
 			k++;
 		}
 
 		if (i < total_elems - NUM_FIELDS)
 			i += NUM_FIELDS;
-		else
-		{
+		else {
 			abs_fmax = array[i];
 			last_entry = true;
 		}
@@ -1357,9 +1081,8 @@ static int clk_osm_get_lut(struct platform_device *pdev,
 
 	fmax_temp[k++] = abs_fmax;
 	clk->fmax = devm_kzalloc(&pdev->dev, k * sizeof(unsigned long),
-													 GFP_KERNEL);
-	if (!clk->fmax)
-	{
+				 GFP_KERNEL);
+	if (!clk->fmax) {
 		rc = -ENOMEM;
 		goto exit;
 	}
@@ -1381,16 +1104,15 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	int i, rc = 0;
 
 	array = devm_kzalloc(&pdev->dev, MAX_CLUSTER_CNT * sizeof(u32),
-											 GFP_KERNEL);
+			     GFP_KERNEL);
 	if (!array)
 		return -ENOMEM;
 
 	rc = of_property_read_u32_array(of, "qcom,l-val-base",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,l-val-base property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1398,11 +1120,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	perfcl_clk.l_val_base = array[perfcl_clk.cluster_num];
 
 	rc = of_property_read_u32_array(of, "qcom,apcs-itm-present",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+				  array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,apcs-itm-present property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1410,11 +1131,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	perfcl_clk.apcs_itm_present = array[perfcl_clk.cluster_num];
 
 	rc = of_property_read_u32_array(of, "qcom,apcs-cfg-rcgr",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,apcs-cfg-rcgr property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1422,11 +1142,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	perfcl_clk.apcs_cfg_rcgr = array[perfcl_clk.cluster_num];
 
 	rc = of_property_read_u32_array(of, "qcom,apcs-cmd-rcgr",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,apcs-cmd-rcgr property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1434,11 +1153,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	perfcl_clk.apcs_cmd_rcgr = array[perfcl_clk.cluster_num];
 
 	rc = of_property_read_u32_array(of, "qcom,apcs-pll-user-ctl",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,apcs-pll-user-ctl property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1446,11 +1164,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	perfcl_clk.apcs_pll_user_ctl = array[perfcl_clk.cluster_num];
 
 	rc = of_property_read_u32_array(of, "qcom,apm-mode-ctl",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+				  array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,apm-mode-ctl property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1458,11 +1175,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	perfcl_clk.apm_mode_ctl = array[perfcl_clk.cluster_num];
 
 	rc = of_property_read_u32_array(of, "qcom,apm-ctrl-status",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+				  array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,apm-ctrl-status property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1471,26 +1187,22 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 
 	for (i = 0; i < LLM_SW_OVERRIDE_CNT; i++)
 		of_property_read_u32_index(of, "qcom,llm-sw-overr",
-															 pwrcl_clk.cluster_num *
-																			 LLM_SW_OVERRIDE_CNT +
-																	 i,
-															 &pwrcl_clk.llm_sw_overr[i]);
+					   pwrcl_clk.cluster_num *
+					   LLM_SW_OVERRIDE_CNT + i,
+					   &pwrcl_clk.llm_sw_overr[i]);
 
 	for (i = 0; i < LLM_SW_OVERRIDE_CNT; i++)
 		of_property_read_u32_index(of, "qcom,llm-sw-overr",
-															 perfcl_clk.cluster_num *
-																			 LLM_SW_OVERRIDE_CNT +
-																	 i,
-															 &perfcl_clk.llm_sw_overr[i]);
+					   perfcl_clk.cluster_num *
+					   LLM_SW_OVERRIDE_CNT + i,
+					   &perfcl_clk.llm_sw_overr[i]);
 
-	if (pwrcl_clk.acd_init || perfcl_clk.acd_init)
-	{
+	if (pwrcl_clk.acd_init || perfcl_clk.acd_init) {
 		rc = of_property_read_u32_array(of, "qcom,acdtd-val",
-																		array, MAX_CLUSTER_CNT);
-		if (rc)
-		{
+						array, MAX_CLUSTER_CNT);
+		if (rc) {
 			dev_err(&pdev->dev, "unable to find qcom,acdtd-val property, rc=%d\n",
-							rc);
+				rc);
 			return -EINVAL;
 		}
 
@@ -1498,11 +1210,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		perfcl_clk.acd_td = array[perfcl_clk.cluster_num];
 
 		rc = of_property_read_u32_array(of, "qcom,acdcr-val",
-																		array, MAX_CLUSTER_CNT);
-		if (rc)
-		{
+						array, MAX_CLUSTER_CNT);
+		if (rc) {
 			dev_err(&pdev->dev, "unable to find qcom,acdcr-val property, rc=%d\n",
-							rc);
+				rc);
 			return -EINVAL;
 		}
 
@@ -1510,11 +1221,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		perfcl_clk.acd_cr = array[perfcl_clk.cluster_num];
 
 		rc = of_property_read_u32_array(of, "qcom,acdsscr-val",
-																		array, MAX_CLUSTER_CNT);
-		if (rc)
-		{
+						array, MAX_CLUSTER_CNT);
+		if (rc) {
 			dev_err(&pdev->dev, "unable to find qcom,acdsscr-val property, rc=%d\n",
-							rc);
+				rc);
 			return -EINVAL;
 		}
 
@@ -1522,11 +1232,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		perfcl_clk.acd_sscr = array[perfcl_clk.cluster_num];
 
 		rc = of_property_read_u32_array(of, "qcom,acdextint0-val",
-																		array, MAX_CLUSTER_CNT);
-		if (rc)
-		{
+						array, MAX_CLUSTER_CNT);
+		if (rc) {
 			dev_err(&pdev->dev, "unable to find qcom,acdextint0-val property, rc=%d\n",
-							rc);
+				rc);
 			return -EINVAL;
 		}
 
@@ -1534,11 +1243,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		perfcl_clk.acd_extint0_cfg = array[perfcl_clk.cluster_num];
 
 		rc = of_property_read_u32_array(of, "qcom,acdextint1-val",
-																		array, MAX_CLUSTER_CNT);
-		if (rc)
-		{
+						array, MAX_CLUSTER_CNT);
+		if (rc) {
 			dev_err(&pdev->dev, "unable to find qcom,acdextint1-val property, rc=%d\n",
-							rc);
+				rc);
 			return -EINVAL;
 		}
 
@@ -1546,11 +1254,10 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		perfcl_clk.acd_extint1_cfg = array[perfcl_clk.cluster_num];
 
 		rc = of_property_read_u32_array(of, "qcom,acdautoxfer-val",
-																		array, MAX_CLUSTER_CNT);
-		if (rc)
-		{
+						array, MAX_CLUSTER_CNT);
+		if (rc) {
 			dev_err(&pdev->dev, "unable to find qcom,acdautoxfer-val property, rc=%d\n",
-							rc);
+				rc);
 			return -EINVAL;
 		}
 
@@ -1559,117 +1266,110 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	}
 
 	rc = of_property_read_u32(of, "qcom,xo-clk-rate",
-														&pwrcl_clk.xo_clk_rate);
-	if (rc)
-	{
+				  &pwrcl_clk.xo_clk_rate);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,xo-clk-rate property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
 	perfcl_clk.xo_clk_rate = pwrcl_clk.xo_clk_rate;
 
 	rc = of_property_read_u32(of, "qcom,osm-clk-rate",
-														&pwrcl_clk.osm_clk_rate);
-	if (rc)
-	{
+				  &pwrcl_clk.osm_clk_rate);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,osm-clk-rate property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 	perfcl_clk.osm_clk_rate = pwrcl_clk.osm_clk_rate;
 
 	rc = of_property_read_u32(of, "qcom,cc-reads",
-														&pwrcl_clk.cycle_counter_reads);
-	if (rc)
-	{
+				  &pwrcl_clk.cycle_counter_reads);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,cc-reads property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 	perfcl_clk.cycle_counter_reads = pwrcl_clk.cycle_counter_reads;
 
 	rc = of_property_read_u32(of, "qcom,cc-delay",
-														&pwrcl_clk.cycle_counter_delay);
+				  &pwrcl_clk.cycle_counter_delay);
 	if (rc)
 		dev_dbg(&pdev->dev, "no delays between cycle counter reads\n");
 	else
 		perfcl_clk.cycle_counter_delay = pwrcl_clk.cycle_counter_delay;
 
 	rc = of_property_read_u32(of, "qcom,cc-factor",
-														&pwrcl_clk.cycle_counter_factor);
+				  &pwrcl_clk.cycle_counter_factor);
 	if (rc)
 		dev_dbg(&pdev->dev, "no factor specified for cycle counter estimation\n");
 	else
 		perfcl_clk.cycle_counter_factor =
-				pwrcl_clk.cycle_counter_factor;
+			pwrcl_clk.cycle_counter_factor;
 
 	perfcl_clk.red_fsm_en = pwrcl_clk.red_fsm_en =
-			of_property_read_bool(of, "qcom,red-fsm-en");
+		of_property_read_bool(of, "qcom,red-fsm-en");
 
 	perfcl_clk.boost_fsm_en = pwrcl_clk.boost_fsm_en =
-			of_property_read_bool(of, "qcom,boost-fsm-en");
+		of_property_read_bool(of, "qcom,boost-fsm-en");
 
 	perfcl_clk.safe_fsm_en = pwrcl_clk.safe_fsm_en =
-			of_property_read_bool(of, "qcom,safe-fsm-en");
+		of_property_read_bool(of, "qcom,safe-fsm-en");
 
 	perfcl_clk.ps_fsm_en = pwrcl_clk.ps_fsm_en =
-			of_property_read_bool(of, "qcom,ps-fsm-en");
+		of_property_read_bool(of, "qcom,ps-fsm-en");
 
 	perfcl_clk.droop_fsm_en = pwrcl_clk.droop_fsm_en =
-			of_property_read_bool(of, "qcom,droop-fsm-en");
+		of_property_read_bool(of, "qcom,droop-fsm-en");
 
 	perfcl_clk.wfx_fsm_en = pwrcl_clk.wfx_fsm_en =
-			of_property_read_bool(of, "qcom,wfx-fsm-en");
+		of_property_read_bool(of, "qcom,wfx-fsm-en");
 
 	perfcl_clk.pc_fsm_en = pwrcl_clk.pc_fsm_en =
-			of_property_read_bool(of, "qcom,pc-fsm-en");
+		of_property_read_bool(of, "qcom,pc-fsm-en");
 
 	devm_kfree(&pdev->dev, array);
 
 	perfcl_clk.secure_init = pwrcl_clk.secure_init =
-			of_property_read_bool(pdev->dev.of_node, "qcom,osm-no-tz");
+		of_property_read_bool(pdev->dev.of_node, "qcom,osm-no-tz");
 
 	if (!pwrcl_clk.secure_init)
 		return rc;
 
 	rc = of_property_read_u32_array(of, "qcom,pwrcl-apcs-mem-acc-cfg",
-																	pwrcl_clk.apcs_mem_acc_cfg,
-																	MAX_MEM_ACC_VAL_PER_LEVEL);
-	if (rc)
-	{
+					pwrcl_clk.apcs_mem_acc_cfg,
+					MAX_MEM_ACC_VAL_PER_LEVEL);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,pwrcl-apcs-mem-acc-cfg property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
 	of_property_read_u32_array(of, "qcom,perfcl-apcs-mem-acc-cfg",
-														 perfcl_clk.apcs_mem_acc_cfg,
-														 MAX_MEM_ACC_VAL_PER_LEVEL);
-	if (rc)
-	{
+				   perfcl_clk.apcs_mem_acc_cfg,
+				   MAX_MEM_ACC_VAL_PER_LEVEL);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,perfcl-apcs-mem-acc-cfg property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
 	rc = of_property_read_u32_array(of, "qcom,pwrcl-apcs-mem-acc-val",
-																	pwrcl_clk.apcs_mem_acc_val,
-																	MAX_MEM_ACC_VALUES);
-	if (rc)
-	{
+					pwrcl_clk.apcs_mem_acc_val,
+					MAX_MEM_ACC_VALUES);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,pwrcl-apcs-mem-acc-val property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
 	rc = of_property_read_u32_array(of, "qcom,perfcl-apcs-mem-acc-val",
-																	perfcl_clk.apcs_mem_acc_val,
-																	MAX_MEM_ACC_VALUES);
-	if (rc)
-	{
+					perfcl_clk.apcs_mem_acc_val,
+					MAX_MEM_ACC_VALUES);
+	if (rc) {
 		dev_err(&pdev->dev, "unable to find qcom,perfcl-apcs-mem-acc-val property, rc=%d\n",
-						rc);
+			rc);
 		return -EINVAL;
 	}
 
@@ -1686,70 +1386,61 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	void *vbase;
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "osm");
-	if (!res)
-	{
+	if (!res) {
 		dev_err(&pdev->dev,
-						"Unable to get platform resource for osm");
+			"Unable to get platform resource for osm");
 		return -ENOMEM;
 	}
 
 	pwrcl_clk.pbases[OSM_BASE] = (unsigned long)res->start;
 	pwrcl_clk.vbases[OSM_BASE] = devm_ioremap(&pdev->dev, res->start,
-																						resource_size(res));
-	if (!pwrcl_clk.vbases[OSM_BASE])
-	{
+						  resource_size(res));
+	if (!pwrcl_clk.vbases[OSM_BASE]) {
 		dev_err(&pdev->dev, "Unable to map in osm base\n");
 		return -ENOMEM;
 	}
 
 	perfcl_clk.pbases[OSM_BASE] = pwrcl_clk.pbases[OSM_BASE] +
-																perfcl_clk.cluster_num * OSM_CORE_TABLE_SIZE;
-	perfcl_clk.vbases[OSM_BASE] = pwrcl_clk.vbases[OSM_BASE] +
-																perfcl_clk.cluster_num * OSM_CORE_TABLE_SIZE;
+		perfcl_clk.cluster_num * OSM_CORE_TABLE_SIZE;
+	perfcl_clk.vbases[OSM_BASE] = pwrcl_clk.vbases[OSM_BASE]  +
+		perfcl_clk.cluster_num * OSM_CORE_TABLE_SIZE;
 
-	for (i = 0; i < MAX_CLUSTER_CNT; i++)
-	{
+	for (i = 0; i < MAX_CLUSTER_CNT; i++) {
 		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-																			 i == pwrcl_clk.cluster_num ? "pwrcl_pll" : "perfcl_pll");
-		if (!res)
-		{
+						   i == pwrcl_clk.cluster_num ?
+						   "pwrcl_pll" : "perfcl_pll");
+		if (!res) {
 			dev_err(&pdev->dev,
-							"Unable to get platform resource\n");
+				"Unable to get platform resource\n");
 			return -ENOMEM;
 		}
 		pbase = (unsigned long)res->start;
 		vbase = devm_ioremap(&pdev->dev, res->start,
-												 resource_size(res));
+				     resource_size(res));
 
-		if (!vbase)
-		{
+		if (!vbase) {
 			dev_err(&pdev->dev, "Unable to map in base\n");
 			return -ENOMEM;
 		}
 
-		if (i == pwrcl_clk.cluster_num)
-		{
+		if (i == pwrcl_clk.cluster_num) {
 			pwrcl_clk.pbases[PLL_BASE] = pbase;
 			pwrcl_clk.vbases[PLL_BASE] = vbase;
-		}
-		else
-		{
+		} else {
 			perfcl_clk.pbases[PLL_BASE] = pbase;
 			perfcl_clk.vbases[PLL_BASE] = vbase;
 		}
 	}
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "debug");
-	if (!res)
-	{
+	if (!res) {
 		dev_err(&pdev->dev, "Failed to get debug mux base\n");
 		return -EINVAL;
 	}
 
 	debug_base = devm_ioremap(&pdev->dev, res->start,
-														resource_size(res));
-	if (!debug_base)
-	{
+						  resource_size(res));
+	if (!debug_base) {
 		dev_err(&pdev->dev, "Unable to map in debug mux base\n");
 		return -ENOMEM;
 	}
@@ -1758,29 +1449,25 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	clk_ops_cpu_dbg_mux.get_rate = cpu_dbg_mux_get_rate;
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "apcs_common");
-	if (!res)
-	{
+	if (!res) {
 		dev_err(&pdev->dev, "Failed to get apcs common base\n");
 		return -EINVAL;
 	}
 
 	virt_base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
-	if (!virt_base)
-	{
+	if (!virt_base) {
 		dev_err(&pdev->dev, "Failed to map apcs common registers\n");
 		return -ENOMEM;
 	}
 
 	/* efuse speed bin fuses are optional */
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-																		 "pwrcl_efuse");
-	if (res)
-	{
+					   "pwrcl_efuse");
+	if (res) {
 		pbase = (unsigned long)res->start;
 		vbase = devm_ioremap(&pdev->dev, res->start,
-												 resource_size(res));
-		if (!vbase)
-		{
+				     resource_size(res));
+		if (!vbase) {
 			dev_err(&pdev->dev, "Unable to map in pwrcl_efuse base\n");
 			return -ENOMEM;
 		}
@@ -1789,14 +1476,12 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	}
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-																		 "perfcl_efuse");
-	if (res)
-	{
+					   "perfcl_efuse");
+	if (res) {
 		pbase = (unsigned long)res->start;
 		vbase = devm_ioremap(&pdev->dev, res->start,
-												 resource_size(res));
-		if (!vbase)
-		{
+				     resource_size(res));
+		if (!vbase) {
 			dev_err(&pdev->dev, "Unable to map in perfcl_efuse base\n");
 			return -ENOMEM;
 		}
@@ -1805,14 +1490,12 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	}
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-																		 "pwrcl_acd");
-	if (res)
-	{
+					   "pwrcl_acd");
+	if (res) {
 		pbase = (unsigned long)res->start;
 		vbase = devm_ioremap(&pdev->dev, res->start,
-												 resource_size(res));
-		if (!vbase)
-		{
+				     resource_size(res));
+		if (!vbase) {
 			dev_err(&pdev->dev, "Unable to map in pwrcl_acd base\n");
 			return -ENOMEM;
 		}
@@ -1820,21 +1503,17 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 		pwrcl_clk.acd_debugfs_addr_size = resource_size(res);
 		pwrcl_clk.vbases[ACD_BASE] = vbase;
 		pwrcl_clk.acd_init = true;
-	}
-	else
-	{
+	} else {
 		pwrcl_clk.acd_init = false;
 	}
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-																		 "perfcl_acd");
-	if (res)
-	{
+					   "perfcl_acd");
+	if (res) {
 		pbase = (unsigned long)res->start;
 		vbase = devm_ioremap(&pdev->dev, res->start,
-												 resource_size(res));
-		if (!vbase)
-		{
+				     resource_size(res));
+		if (!vbase) {
 			dev_err(&pdev->dev, "Unable to map in perfcl_acd base\n");
 			return -ENOMEM;
 		}
@@ -1842,93 +1521,83 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 		perfcl_clk.acd_debugfs_addr_size = resource_size(res);
 		perfcl_clk.vbases[ACD_BASE] = vbase;
 		perfcl_clk.acd_init = true;
-	}
-	else
-	{
+	} else {
 		perfcl_clk.acd_init = false;
 	}
 
 	pwrcl_clk.debug_regs[0] = devm_ioremap(&pdev->dev,
-																				 pwrcl_clk.pbases[OSM_BASE] +
-																						 clk_panic_reg_offsets[0],
-																				 0x4);
-	if (!pwrcl_clk.debug_regs[0])
-	{
+					       pwrcl_clk.pbases[OSM_BASE] +
+					       clk_panic_reg_offsets[0],
+					       0x4);
+	if (!pwrcl_clk.debug_regs[0]) {
 		dev_err(&pdev->dev, "Failed to map %s debug register\n",
-						clk_panic_reg_names[0]);
+			clk_panic_reg_names[0]);
 		return -ENOMEM;
 	}
 
 	pwrcl_clk.debug_regs[1] = devm_ioremap(&pdev->dev,
-																				 pwrcl_clk.pbases[OSM_BASE] +
-																						 clk_panic_reg_offsets[1],
-																				 0x4);
-	if (!pwrcl_clk.debug_regs[1])
-	{
+					       pwrcl_clk.pbases[OSM_BASE] +
+					       clk_panic_reg_offsets[1],
+					       0x4);
+	if (!pwrcl_clk.debug_regs[1]) {
 		dev_err(&pdev->dev, "Failed to map %s debug register\n",
-						clk_panic_reg_names[1]);
+			clk_panic_reg_names[1]);
 		return -ENOMEM;
 	}
 
 	pwrcl_clk.debug_regs[2] = devm_ioremap(&pdev->dev,
-																				 pwrcl_clk.apm_ctrl_status,
-																				 0x4);
-	if (!pwrcl_clk.debug_regs[2])
-	{
+					       pwrcl_clk.apm_ctrl_status,
+					       0x4);
+	if (!pwrcl_clk.debug_regs[2]) {
 		dev_err(&pdev->dev, "Failed to map %s debug register\n",
-						clk_panic_reg_names[2]);
+			clk_panic_reg_names[2]);
 		return -ENOMEM;
 	}
 
 	perfcl_clk.debug_regs[0] = devm_ioremap(&pdev->dev,
-																					perfcl_clk.pbases[OSM_BASE] +
-																							clk_panic_reg_offsets[0],
-																					0x4);
-	if (!perfcl_clk.debug_regs[0])
-	{
+						perfcl_clk.pbases[OSM_BASE] +
+						clk_panic_reg_offsets[0],
+						0x4);
+	if (!perfcl_clk.debug_regs[0]) {
 		dev_err(&pdev->dev, "Failed to map %s debug register\n",
-						clk_panic_reg_names[0]);
+			clk_panic_reg_names[0]);
 		return -ENOMEM;
 	}
 
 	perfcl_clk.debug_regs[1] = devm_ioremap(&pdev->dev,
-																					perfcl_clk.pbases[OSM_BASE] +
-																							clk_panic_reg_offsets[1],
-																					0x4);
-	if (!perfcl_clk.debug_regs[1])
-	{
+						perfcl_clk.pbases[OSM_BASE] +
+						clk_panic_reg_offsets[1],
+						0x4);
+	if (!perfcl_clk.debug_regs[1]) {
 		dev_err(&pdev->dev, "Failed to map %s debug register\n",
-						clk_panic_reg_names[1]);
+			clk_panic_reg_names[1]);
 		return -ENOMEM;
 	}
 
 	perfcl_clk.debug_regs[2] = devm_ioremap(&pdev->dev,
-																					perfcl_clk.apm_ctrl_status,
-																					0x4);
-	if (!perfcl_clk.debug_regs[2])
-	{
+						perfcl_clk.apm_ctrl_status,
+						0x4);
+	if (!perfcl_clk.debug_regs[2]) {
 		dev_err(&pdev->dev, "Failed to map %s debug register\n",
-						clk_panic_reg_names[2]);
+			clk_panic_reg_names[2]);
 		return -ENOMEM;
 	}
 
 	vdd_pwrcl = devm_regulator_get(&pdev->dev, "vdd-pwrcl");
-	if (IS_ERR(vdd_pwrcl))
-	{
+	if (IS_ERR(vdd_pwrcl)) {
 		rc = PTR_ERR(vdd_pwrcl);
 		if (rc != -EPROBE_DEFER)
 			dev_err(&pdev->dev, "Unable to get the pwrcl vreg, rc=%d\n",
-							rc);
+				rc);
 		return rc;
 	}
 
 	vdd_perfcl = devm_regulator_get(&pdev->dev, "vdd-perfcl");
-	if (IS_ERR(vdd_perfcl))
-	{
+	if (IS_ERR(vdd_perfcl)) {
 		rc = PTR_ERR(vdd_perfcl);
 		if (rc != -EPROBE_DEFER)
 			dev_err(&pdev->dev, "Unable to get the perfcl vreg, rc=%d\n",
-							rc);
+				rc);
 		return rc;
 	}
 
@@ -1936,52 +1605,46 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	perfcl_clk.vdd_reg = vdd_perfcl;
 
 	node = of_parse_phandle(pdev->dev.of_node, "vdd-pwrcl-supply", 0);
-	if (!node)
-	{
+	if (!node) {
 		pr_err("Unable to find vdd-pwrcl-supply\n");
 		return -EINVAL;
 	}
 
 	pwrcl_clk.vdd_dev = of_find_device_by_node(node->parent->parent);
-	if (!pwrcl_clk.vdd_dev)
-	{
+	if (!pwrcl_clk.vdd_dev) {
 		pr_err("Unable to find device for vdd-pwrcl-supply node\n");
 		return -EINVAL;
 	}
 
 	node = of_parse_phandle(pdev->dev.of_node,
-													"vdd-perfcl-supply", 0);
-	if (!node)
-	{
+				"vdd-perfcl-supply", 0);
+	if (!node) {
 		pr_err("Unable to find vdd-perfcl-supply\n");
 		return -EINVAL;
 	}
 
 	perfcl_clk.vdd_dev = of_find_device_by_node(node->parent->parent);
-	if (!perfcl_clk.vdd_dev)
-	{
+	if (!perfcl_clk.vdd_dev) {
 		pr_err("Unable to find device for vdd-perfcl-supply\n");
 		return -EINVAL;
 	}
 
 	c = devm_clk_get(&pdev->dev, "aux_clk");
-	if (IS_ERR(c))
-	{
+	if (IS_ERR(c)) {
 		rc = PTR_ERR(c);
 		if (rc != -EPROBE_DEFER)
 			dev_err(&pdev->dev, "Unable to get aux_clk, rc=%d\n",
-							rc);
+				rc);
 		return rc;
 	}
 	sys_apcsaux_clk_gcc.c.parent = c;
 
 	c = devm_clk_get(&pdev->dev, "xo_ao");
-	if (IS_ERR(c))
-	{
+	if (IS_ERR(c)) {
 		rc = PTR_ERR(c);
 		if (rc != -EPROBE_DEFER)
 			dev_err(&pdev->dev, "Unable to get xo_ao clk, rc=%d\n",
-							rc);
+				rc);
 		return rc;
 	}
 	xo_ao.c.parent = c;
@@ -1994,11 +1657,11 @@ static void clk_osm_setup_cluster_pll(struct clk_osm *c)
 	writel_relaxed(0x0, c->vbases[PLL_BASE] + PLL_MODE);
 	writel_relaxed(0x20, c->vbases[PLL_BASE] + PLL_L_VAL);
 	writel_relaxed(0x01000008, c->vbases[PLL_BASE] +
-																 PLL_USER_CTRL);
+		       PLL_USER_CTRL);
 	writel_relaxed(0x20004AA8, c->vbases[PLL_BASE] +
-																 PLL_CONFIG_CTL_LO);
+		       PLL_CONFIG_CTL_LO);
 	writel_relaxed(0x2, c->vbases[PLL_BASE] +
-													PLL_MODE);
+		       PLL_MODE);
 
 	/* Ensure writes complete before delaying */
 	clk_osm_mb(c, PLL_BASE);
@@ -2022,20 +1685,20 @@ static int clk_osm_setup_hw_table(struct clk_osm *c)
 	u32 freq_val = 0, volt_val = 0, override_val = 0, spare_val = 0;
 	u32 table_entry_offset = 0, last_spare = 0, last_virtual_corner = 0;
 
-	for (i = 0; i < OSM_TABLE_SIZE; i++)
-	{
-		if (i < c->num_entries)
-		{
+	for (i = 0; i < OSM_TABLE_SIZE; i++) {
+		if (i < c->num_entries) {
 			freq_val = entry[i].freq_data;
-			volt_val = BVAL(21, 16, entry[i].virtual_corner) | BVAL(11, 0, entry[i].open_loop_volt);
+			volt_val = BVAL(21, 16, entry[i].virtual_corner)
+				| BVAL(11, 0, entry[i].open_loop_volt);
 			override_val = entry[i].override_data;
 			spare_val = entry[i].spare_data;
 
-			if (last_virtual_corner && last_virtual_corner == entry[i].virtual_corner && last_spare != entry[i].spare_data)
-			{
+			if (last_virtual_corner && last_virtual_corner ==
+			    entry[i].virtual_corner && last_spare !=
+			    entry[i].spare_data) {
 				pr_err("invalid LUT entry at row=%d virtual_corner=%d, spare_data=%d\n",
-							 i, entry[i].virtual_corner,
-							 entry[i].spare_data);
+				       i, entry[i].virtual_corner,
+				       entry[i].spare_data);
 				return -EINVAL;
 			}
 			last_virtual_corner = entry[i].virtual_corner;
@@ -2046,8 +1709,10 @@ static int clk_osm_setup_hw_table(struct clk_osm *c)
 		clk_osm_write_reg(c, i, INDEX_REG + table_entry_offset);
 		clk_osm_write_reg(c, freq_val, FREQ_REG + table_entry_offset);
 		clk_osm_write_reg(c, volt_val, VOLT_REG + table_entry_offset);
-		clk_osm_write_reg(c, override_val, OVERRIDE_REG + table_entry_offset);
-		clk_osm_write_reg(c, spare_val, SPARE_REG + table_entry_offset);
+		clk_osm_write_reg(c, override_val, OVERRIDE_REG +
+				  table_entry_offset);
+		clk_osm_write_reg(c, spare_val, SPARE_REG +
+				  table_entry_offset);
 	}
 
 	/* Make sure all writes go through */
@@ -2062,8 +1727,7 @@ static int clk_osm_resolve_open_loop_voltages(struct clk_osm *c)
 	u32 vc, mv;
 	int i;
 
-	for (i = 0; i < OSM_TABLE_SIZE; i++)
-	{
+	for (i = 0; i < OSM_TABLE_SIZE; i++) {
 		vc = c->osm_table[i].virtual_corner + 1;
 		/* Voltage is in uv. Convert to mv */
 		mv = regulator_list_corner_voltage(regulator, vc) / 1000;
@@ -2074,8 +1738,8 @@ static int clk_osm_resolve_open_loop_voltages(struct clk_osm *c)
 }
 
 static int clk_osm_resolve_crossover_corners(struct clk_osm *c,
-																						 struct platform_device *pdev,
-																						 const char *mem_acc_prop)
+				     struct platform_device *pdev,
+				     const char *mem_acc_prop)
 {
 	struct regulator *regulator = c->vdd_reg;
 	int count, vc, i, apm_threshold;
@@ -2084,22 +1748,20 @@ static int clk_osm_resolve_crossover_corners(struct clk_osm *c,
 	u32 corner_volt;
 
 	rc = of_property_read_u32(pdev->dev.of_node,
-														"qcom,apm-threshold-voltage",
-														&apm_threshold);
-	if (rc)
-	{
+				  "qcom,apm-threshold-voltage",
+				  &apm_threshold);
+	if (rc) {
 		pr_info("qcom,apm-threshold-voltage property not specified\n");
 		return rc;
 	}
 
 	if (mem_acc_prop)
 		of_property_read_u32(pdev->dev.of_node, mem_acc_prop,
-												 &mem_acc_threshold);
+					  &mem_acc_threshold);
 
 	/* Determine crossover virtual corner */
 	count = regulator_count_voltages(regulator);
-	if (count < 0)
-	{
+	if (count < 0) {
 		pr_err("Failed to get the number of virtual corners supported\n");
 		return count;
 	}
@@ -2114,30 +1776,26 @@ static int clk_osm_resolve_crossover_corners(struct clk_osm *c,
 	 * functional corners, the APM crossover corner, and potentially the
 	 * MEM ACC cross over corner.
 	 */
-	if (mem_acc_threshold)
-	{
+	if (mem_acc_threshold) {
 		c->apm_crossover_vc = count - 2;
 		c->mem_acc_crossover_vc = count - 1;
-	}
-	else
-	{
+	} else {
 		c->apm_crossover_vc = count - 1;
 	}
 
 	/* Determine APM threshold virtual corner */
-	for (i = 0; i < OSM_TABLE_SIZE; i++)
-	{
+	for (i = 0; i < OSM_TABLE_SIZE; i++) {
 		vc = c->osm_table[i].virtual_corner + 1;
 		corner_volt = regulator_list_corner_voltage(regulator, vc);
 
-		if (corner_volt >= apm_threshold)
-		{
+		if (corner_volt >= apm_threshold) {
 			c->apm_threshold_vc = c->osm_table[i].virtual_corner;
 			/*
 			 * Handle case where VC 0 has open-loop
 			 * greater than or equal to APM threshold voltage.
 			 */
-			c->apm_threshold_pre_vc = c->apm_threshold_vc ? c->apm_threshold_vc - 1 : OSM_SEQ_MINUS_ONE;
+			c->apm_threshold_pre_vc = c->apm_threshold_vc ?
+				c->apm_threshold_vc - 1 : OSM_SEQ_MINUS_ONE;
 			break;
 		}
 	}
@@ -2147,30 +1805,30 @@ static int clk_osm_resolve_crossover_corners(struct clk_osm *c,
 	 * 0 to MAX_VIRTUAL_CORNER - 1.
 	 */
 	if (!c->apm_threshold_vc &&
-			c->apm_threshold_pre_vc != OSM_SEQ_MINUS_ONE)
-	{
+	    c->apm_threshold_pre_vc != OSM_SEQ_MINUS_ONE) {
 		c->apm_threshold_vc = MAX_VIRTUAL_CORNER;
 		c->apm_threshold_pre_vc = c->apm_threshold_vc - 1;
 	}
 
 	/* Determine MEM ACC threshold virtual corner */
-	if (mem_acc_threshold)
-	{
-		for (i = 0; i < OSM_TABLE_SIZE; i++)
-		{
+	if (mem_acc_threshold) {
+		for (i = 0; i < OSM_TABLE_SIZE; i++) {
 			vc = c->osm_table[i].virtual_corner + 1;
-			corner_volt = regulator_list_corner_voltage(regulator, vc);
+			corner_volt
+				= regulator_list_corner_voltage(regulator, vc);
 
-			if (corner_volt >= mem_acc_threshold)
-			{
-				c->mem_acc_threshold_vc = c->osm_table[i].virtual_corner;
+			if (corner_volt >= mem_acc_threshold) {
+				c->mem_acc_threshold_vc
+					= c->osm_table[i].virtual_corner;
 				/*
 				 * Handle case where VC 0 has open-loop
 				 * greater than or equal to MEM-ACC threshold
 				 * voltage.
 				 */
 				c->mem_acc_threshold_pre_vc =
-						c->mem_acc_threshold_vc ? c->mem_acc_threshold_vc - 1 : OSM_SEQ_MINUS_ONE;
+					c->mem_acc_threshold_vc ?
+					c->mem_acc_threshold_vc - 1 :
+					OSM_SEQ_MINUS_ONE;
 				break;
 			}
 		}
@@ -2179,12 +1837,12 @@ static int clk_osm_resolve_crossover_corners(struct clk_osm *c,
 		 * This assumes the OSM table uses corners
 		 * 0 to MAX_VIRTUAL_CORNER - 1.
 		 */
-		if (!c->mem_acc_threshold_vc && c->mem_acc_threshold_pre_vc != OSM_SEQ_MINUS_ONE)
-		{
+		if (!c->mem_acc_threshold_vc && c->mem_acc_threshold_pre_vc
+		    != OSM_SEQ_MINUS_ONE) {
 			c->mem_acc_threshold_vc =
-					MAX_VIRTUAL_CORNER;
+				MAX_VIRTUAL_CORNER;
 			c->mem_acc_threshold_pre_vc =
-					c->mem_acc_threshold_vc - 1;
+				c->mem_acc_threshold_vc - 1;
 		}
 	}
 
@@ -2198,54 +1856,55 @@ static int clk_osm_set_cc_policy(struct platform_device *pdev)
 	struct device_node *of = pdev->dev.of_node;
 
 	array = devm_kzalloc(&pdev->dev, MAX_CLUSTER_CNT * sizeof(u32),
-											 GFP_KERNEL);
+			     GFP_KERNEL);
 	if (!array)
 		return -ENOMEM;
 
 	rc = of_property_read_u32_array(of, "qcom,up-timer", array,
-																	MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_dbg(&pdev->dev, "No up timer value, rc=%d\n",
-						rc);
-	}
-	else
-	{
-		val = clk_osm_read_reg(&pwrcl_clk, SPM_CC_HYSTERESIS) | BVAL(31, 16, clk_osm_count_ns(&pwrcl_clk, array[pwrcl_clk.cluster_num]));
+			 rc);
+	} else {
+		val = clk_osm_read_reg(&pwrcl_clk, SPM_CC_HYSTERESIS)
+			| BVAL(31, 16, clk_osm_count_ns(&pwrcl_clk,
+					array[pwrcl_clk.cluster_num]));
 		clk_osm_write_reg(&pwrcl_clk, val, SPM_CC_HYSTERESIS);
-		val = clk_osm_read_reg(&perfcl_clk, SPM_CC_HYSTERESIS) | BVAL(31, 16, clk_osm_count_ns(&perfcl_clk, array[perfcl_clk.cluster_num]));
+		val = clk_osm_read_reg(&perfcl_clk, SPM_CC_HYSTERESIS)
+			| BVAL(31, 16, clk_osm_count_ns(&perfcl_clk,
+					array[perfcl_clk.cluster_num]));
 		clk_osm_write_reg(&perfcl_clk, val, SPM_CC_HYSTERESIS);
 	}
 
 	rc = of_property_read_u32_array(of, "qcom,down-timer",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_dbg(&pdev->dev, "No down timer value, rc=%d\n", rc);
-	}
-	else
-	{
-		val = clk_osm_read_reg(&pwrcl_clk, SPM_CC_HYSTERESIS) | BVAL(15, 0, clk_osm_count_ns(&pwrcl_clk, array[pwrcl_clk.cluster_num]));
+	} else {
+		val = clk_osm_read_reg(&pwrcl_clk, SPM_CC_HYSTERESIS)
+			| BVAL(15, 0, clk_osm_count_ns(&pwrcl_clk,
+				       array[pwrcl_clk.cluster_num]));
 		clk_osm_write_reg(&pwrcl_clk, val, SPM_CC_HYSTERESIS);
-		val = clk_osm_read_reg(&perfcl_clk, SPM_CC_HYSTERESIS) | BVAL(15, 0, clk_osm_count_ns(&perfcl_clk, array[perfcl_clk.cluster_num]));
+		val = clk_osm_read_reg(&perfcl_clk, SPM_CC_HYSTERESIS)
+			| BVAL(15, 0, clk_osm_count_ns(&perfcl_clk,
+				       array[perfcl_clk.cluster_num]));
 		clk_osm_write_reg(&perfcl_clk, val, SPM_CC_HYSTERESIS);
 	}
 
 	/* OSM index override for cluster PC */
 	rc = of_property_read_u32_array(of, "qcom,pc-override-index",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_dbg(&pdev->dev, "No PC override index value, rc=%d\n",
-						rc);
+			rc);
 		clk_osm_write_reg(&pwrcl_clk, 0, CC_ZERO_BEHAV_CTRL);
 		clk_osm_write_reg(&perfcl_clk, 0, CC_ZERO_BEHAV_CTRL);
-	}
-	else
-	{
-		val = BVAL(6, 1, array[pwrcl_clk.cluster_num]) | ENABLE_OVERRIDE;
+	} else {
+		val = BVAL(6, 1, array[pwrcl_clk.cluster_num])
+			| ENABLE_OVERRIDE;
 		clk_osm_write_reg(&pwrcl_clk, val, CC_ZERO_BEHAV_CTRL);
-		val = BVAL(6, 1, array[perfcl_clk.cluster_num]) | ENABLE_OVERRIDE;
+		val = BVAL(6, 1, array[perfcl_clk.cluster_num])
+			| ENABLE_OVERRIDE;
 		clk_osm_write_reg(&perfcl_clk, val, CC_ZERO_BEHAV_CTRL);
 	}
 
@@ -2253,13 +1912,10 @@ static int clk_osm_set_cc_policy(struct platform_device *pdev)
 	clk_osm_mb(&perfcl_clk, OSM_BASE);
 
 	rc = of_property_read_bool(pdev->dev.of_node, "qcom,set-ret-inactive");
-	if (rc)
-	{
+	if (rc) {
 		dev_dbg(&pdev->dev, "Treat cores in retention as active\n");
 		val = 0;
-	}
-	else
-	{
+	} else {
 		dev_dbg(&pdev->dev, "Treat cores in retention as inactive\n");
 		val = 1;
 	}
@@ -2268,12 +1924,10 @@ static int clk_osm_set_cc_policy(struct platform_device *pdev)
 	clk_osm_write_reg(&perfcl_clk, val, SPM_CORE_RET_MAPPING);
 
 	rc = of_property_read_bool(pdev->dev.of_node, "qcom,disable-cc-dvcs");
-	if (rc)
-	{
+	if (rc) {
 		dev_dbg(&pdev->dev, "Disabling CC based DCVS\n");
 		val = 1;
-	}
-	else
+	} else
 		val = 0;
 
 	clk_osm_write_reg(&pwrcl_clk, val, SPM_CC_DCVS_DISABLE);
@@ -2290,10 +1944,10 @@ static void clk_osm_setup_itm_to_osm_handoff(void)
 {
 	/* Program address of ITM_PRESENT of CPUSS */
 	clk_osm_write_reg(&pwrcl_clk, pwrcl_clk.apcs_itm_present,
-										SEQ_REG(37));
+			  SEQ_REG(37));
 	clk_osm_write_reg(&pwrcl_clk, 0, SEQ_REG(38));
 	clk_osm_write_reg(&perfcl_clk, perfcl_clk.apcs_itm_present,
-										SEQ_REG(37));
+			  SEQ_REG(37));
 	clk_osm_write_reg(&perfcl_clk, 0, SEQ_REG(38));
 
 	/*
@@ -2301,9 +1955,9 @@ static void clk_osm_setup_itm_to_osm_handoff(void)
 	 * is enabled and the ITM for this domain is to be disabled.
 	 */
 	clk_osm_write_reg(&pwrcl_clk, ITM_CL0_DISABLE_CL1_ENABLED,
-										SEQ_REG(39));
+			  SEQ_REG(39));
 	clk_osm_write_reg(&perfcl_clk, ITM_CL0_ENABLED_CL1_DISABLE,
-										SEQ_REG(39));
+			  SEQ_REG(39));
 }
 
 static int clk_osm_set_llm_freq_policy(struct platform_device *pdev)
@@ -2313,7 +1967,7 @@ static int clk_osm_set_llm_freq_policy(struct platform_device *pdev)
 	int rc = 0, val, regval;
 
 	array = devm_kzalloc(&pdev->dev, MAX_CLUSTER_CNT * sizeof(u32),
-											 GFP_KERNEL);
+			     GFP_KERNEL);
 	if (!array)
 		return -ENOMEM;
 
@@ -2323,17 +1977,18 @@ static int clk_osm_set_llm_freq_policy(struct platform_device *pdev)
 	 * Time is specified in us.
 	 */
 	rc = of_property_read_u32_array(of, "qcom,llm-freq-up-timer", array,
-																	MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_dbg(&pdev->dev, "Unable to get CC up timer value: %d\n",
-						rc);
-	}
-	else
-	{
-		val = clk_osm_read_reg(&pwrcl_clk, LLM_FREQ_VOTE_HYSTERESIS) | BVAL(31, 16, clk_osm_count_ns(&pwrcl_clk, array[pwrcl_clk.cluster_num]));
+			rc);
+	} else {
+		val = clk_osm_read_reg(&pwrcl_clk, LLM_FREQ_VOTE_HYSTERESIS)
+			| BVAL(31, 16, clk_osm_count_ns(&pwrcl_clk,
+						array[pwrcl_clk.cluster_num]));
 		clk_osm_write_reg(&pwrcl_clk, val, LLM_FREQ_VOTE_HYSTERESIS);
-		val = clk_osm_read_reg(&perfcl_clk, LLM_FREQ_VOTE_HYSTERESIS) | BVAL(31, 16, clk_osm_count_ns(&perfcl_clk, array[perfcl_clk.cluster_num]));
+		val = clk_osm_read_reg(&perfcl_clk, LLM_FREQ_VOTE_HYSTERESIS)
+			| BVAL(31, 16, clk_osm_count_ns(&perfcl_clk,
+						array[perfcl_clk.cluster_num]));
 		clk_osm_write_reg(&perfcl_clk, val, LLM_FREQ_VOTE_HYSTERESIS);
 	}
 
@@ -2343,29 +1998,28 @@ static int clk_osm_set_llm_freq_policy(struct platform_device *pdev)
 	 * Time is specified in us.
 	 */
 	rc = of_property_read_u32_array(of, "qcom,llm-freq-down-timer",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_dbg(&pdev->dev, "No LLM Frequency down timer value: %d\n",
-						rc);
-	}
-	else
-	{
-		val = clk_osm_read_reg(&pwrcl_clk, LLM_FREQ_VOTE_HYSTERESIS) | BVAL(15, 0, clk_osm_count_ns(&pwrcl_clk, array[pwrcl_clk.cluster_num]));
+			rc);
+	} else {
+		val = clk_osm_read_reg(&pwrcl_clk, LLM_FREQ_VOTE_HYSTERESIS)
+			| BVAL(15, 0, clk_osm_count_ns(&pwrcl_clk,
+					       array[pwrcl_clk.cluster_num]));
 		clk_osm_write_reg(&pwrcl_clk, val, LLM_FREQ_VOTE_HYSTERESIS);
-		val = clk_osm_read_reg(&perfcl_clk, LLM_FREQ_VOTE_HYSTERESIS) | BVAL(15, 0, clk_osm_count_ns(&perfcl_clk, array[perfcl_clk.cluster_num]));
+		val = clk_osm_read_reg(&perfcl_clk, LLM_FREQ_VOTE_HYSTERESIS)
+			| BVAL(15, 0, clk_osm_count_ns(&perfcl_clk,
+					       array[perfcl_clk.cluster_num]));
 		clk_osm_write_reg(&perfcl_clk, val, LLM_FREQ_VOTE_HYSTERESIS);
 	}
 
 	/* Enable or disable honoring of LLM frequency requests */
 	rc = of_property_read_bool(pdev->dev.of_node,
-														 "qcom,enable-llm-freq-vote");
-	if (rc)
-	{
+					"qcom,enable-llm-freq-vote");
+	if (rc) {
 		dev_dbg(&pdev->dev, "Honoring LLM Frequency requests\n");
 		val = 0;
-	}
-	else
+	} else
 		val = 1;
 
 	/* Enable or disable LLM FREQ DVCS */
@@ -2388,7 +2042,7 @@ static int clk_osm_set_llm_volt_policy(struct platform_device *pdev)
 	int rc = 0, val, regval;
 
 	array = devm_kzalloc(&pdev->dev, MAX_CLUSTER_CNT * sizeof(u32),
-											 GFP_KERNEL);
+			     GFP_KERNEL);
 	if (!array)
 		return -ENOMEM;
 
@@ -2398,17 +2052,18 @@ static int clk_osm_set_llm_volt_policy(struct platform_device *pdev)
 	 * Time is specified in us.
 	 */
 	rc = of_property_read_u32_array(of, "qcom,llm-volt-up-timer",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_dbg(&pdev->dev, "No LLM voltage up timer value, rc=%d\n",
-						rc);
-	}
-	else
-	{
-		val = clk_osm_read_reg(&pwrcl_clk, LLM_VOLT_VOTE_HYSTERESIS) | BVAL(31, 16, clk_osm_count_ns(&pwrcl_clk, array[pwrcl_clk.cluster_num]));
+			rc);
+	} else {
+		val = clk_osm_read_reg(&pwrcl_clk, LLM_VOLT_VOTE_HYSTERESIS)
+			| BVAL(31, 16, clk_osm_count_ns(&pwrcl_clk,
+						array[pwrcl_clk.cluster_num]));
 		clk_osm_write_reg(&pwrcl_clk, val, LLM_VOLT_VOTE_HYSTERESIS);
-		val = clk_osm_read_reg(&perfcl_clk, LLM_VOLT_VOTE_HYSTERESIS) | BVAL(31, 16, clk_osm_count_ns(&perfcl_clk, array[perfcl_clk.cluster_num]));
+		val = clk_osm_read_reg(&perfcl_clk, LLM_VOLT_VOTE_HYSTERESIS)
+			| BVAL(31, 16, clk_osm_count_ns(&perfcl_clk,
+						array[perfcl_clk.cluster_num]));
 		clk_osm_write_reg(&perfcl_clk, val, LLM_VOLT_VOTE_HYSTERESIS);
 	}
 
@@ -2418,29 +2073,28 @@ static int clk_osm_set_llm_volt_policy(struct platform_device *pdev)
 	 * Time is specified in us.
 	 */
 	rc = of_property_read_u32_array(of, "qcom,llm-volt-down-timer",
-																	array, MAX_CLUSTER_CNT);
-	if (rc)
-	{
+					array, MAX_CLUSTER_CNT);
+	if (rc) {
 		dev_dbg(&pdev->dev, "No LLM Voltage down timer value: %d\n",
-						rc);
-	}
-	else
-	{
-		val = clk_osm_read_reg(&pwrcl_clk, LLM_VOLT_VOTE_HYSTERESIS) | BVAL(15, 0, clk_osm_count_ns(&pwrcl_clk, array[pwrcl_clk.cluster_num]));
+									rc);
+	} else {
+		val = clk_osm_read_reg(&pwrcl_clk, LLM_VOLT_VOTE_HYSTERESIS)
+			| BVAL(15, 0, clk_osm_count_ns(&pwrcl_clk,
+					       array[pwrcl_clk.cluster_num]));
 		clk_osm_write_reg(&pwrcl_clk, val, LLM_VOLT_VOTE_HYSTERESIS);
-		val = clk_osm_read_reg(&perfcl_clk, LLM_VOLT_VOTE_HYSTERESIS) | BVAL(15, 0, clk_osm_count_ns(&perfcl_clk, array[perfcl_clk.cluster_num]));
+		val = clk_osm_read_reg(&perfcl_clk, LLM_VOLT_VOTE_HYSTERESIS)
+			| BVAL(15, 0, clk_osm_count_ns(&perfcl_clk,
+					       array[perfcl_clk.cluster_num]));
 		clk_osm_write_reg(&perfcl_clk, val, LLM_VOLT_VOTE_HYSTERESIS);
 	}
 
 	/* Enable or disable honoring of LLM Voltage requests */
 	rc = of_property_read_bool(pdev->dev.of_node,
-														 "qcom,enable-llm-volt-vote");
-	if (rc)
-	{
+					"qcom,enable-llm-volt-vote");
+	if (rc) {
 		dev_dbg(&pdev->dev, "Honoring LLM Voltage requests\n");
 		val = 0;
-	}
-	else
+	} else
 		val = BIT(1);
 
 	/* Enable or disable LLM VOLT DVCS */
@@ -2494,20 +2148,18 @@ static void clk_osm_program_mem_acc_regs(struct clk_osm *c)
 	int threshold_vc[4];
 
 	curr_level = c->osm_table[0].spare_data;
-	for (i = 0; i < c->num_entries; i++)
-	{
+	for (i = 0; i < c->num_entries; i++) {
 		if (curr_level == MAX_MEM_ACC_LEVELS)
 			break;
 
-		if (c->osm_table[i].spare_data != curr_level)
-		{
-			mem_acc_level_map[j++] = c->osm_table[i].virtual_corner - 1;
+		if (c->osm_table[i].spare_data != curr_level) {
+			mem_acc_level_map[j++]
+					= c->osm_table[i].virtual_corner - 1;
 			curr_level = c->osm_table[i].spare_data;
 		}
 	}
 
-	if (c->secure_init)
-	{
+	if (c->secure_init) {
 		clk_osm_write_reg(c, MEM_ACC_SEQ_CONST(1), SEQ_REG(51));
 		clk_osm_write_reg(c, MEM_ACC_SEQ_CONST(2), SEQ_REG(52));
 		clk_osm_write_reg(c, MEM_ACC_SEQ_CONST(3), SEQ_REG(53));
@@ -2518,21 +2170,19 @@ static void clk_osm_program_mem_acc_regs(struct clk_osm *c)
 		clk_osm_write_reg(c, mem_acc_level_map[1], SEQ_REG(57));
 		clk_osm_write_reg(c, mem_acc_level_map[1] + 1, SEQ_REG(58));
 		clk_osm_write_reg(c, c->pbases[OSM_BASE] + SEQ_REG(28),
-											SEQ_REG(49));
+				  SEQ_REG(49));
 
 		for (i = 0; i < MAX_MEM_ACC_VALUES; i++)
 			clk_osm_write_reg(c, c->apcs_mem_acc_val[i],
-												MEM_ACC_SEQ_REG_VAL_START(i));
+					  MEM_ACC_SEQ_REG_VAL_START(i));
 
 		for (i = 0; i < MAX_MEM_ACC_VAL_PER_LEVEL; i++)
 			clk_osm_write_reg(c, c->apcs_mem_acc_cfg[i],
-												MEM_ACC_SEQ_REG_CFG_START(i));
-	}
-	else
-	{
+					  MEM_ACC_SEQ_REG_CFG_START(i));
+	} else {
 		if (c->mem_acc_crossover_vc)
 			scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(88),
-									 c->mem_acc_crossover_vc);
+					c->mem_acc_crossover_vc);
 
 		threshold_vc[0] = mem_acc_level_map[0];
 		threshold_vc[1] = mem_acc_level_map[0] + 1;
@@ -2544,18 +2194,15 @@ static void clk_osm_program_mem_acc_regs(struct clk_osm *c)
 		 * highest MEM ACC threshold if it is specified instead of the
 		 * fixed mapping in the LUT.
 		 */
-		if (c->mem_acc_threshold_vc || c->mem_acc_threshold_pre_vc == OSM_SEQ_MINUS_ONE)
-		{
+		if (c->mem_acc_threshold_vc || c->mem_acc_threshold_pre_vc
+		    == OSM_SEQ_MINUS_ONE) {
 			threshold_vc[2] = c->mem_acc_threshold_pre_vc;
 			threshold_vc[3] = c->mem_acc_threshold_vc;
 
-			if (c->mem_acc_threshold_pre_vc == OSM_SEQ_MINUS_ONE)
-			{
+			if (c->mem_acc_threshold_pre_vc == OSM_SEQ_MINUS_ONE) {
 				threshold_vc[1] = threshold_vc[0] =
-						c->mem_acc_threshold_pre_vc;
-			}
-			else
-			{
+					c->mem_acc_threshold_pre_vc;
+			} else {
 				if (threshold_vc[1] >= threshold_vc[2])
 					threshold_vc[1] = threshold_vc[2] - 1;
 				if (threshold_vc[0] >= threshold_vc[1])
@@ -2564,13 +2211,13 @@ static void clk_osm_program_mem_acc_regs(struct clk_osm *c)
 		}
 
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(55),
-								 threshold_vc[0]);
+				threshold_vc[0]);
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(56),
-								 threshold_vc[1]);
+				threshold_vc[1]);
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(57),
-								 threshold_vc[2]);
+				threshold_vc[2]);
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(58),
-								 threshold_vc[3]);
+				threshold_vc[3]);
 		/* SEQ_REG(49) = SEQ_REG(28) init by TZ */
 	}
 
@@ -2579,11 +2226,11 @@ static void clk_osm_program_mem_acc_regs(struct clk_osm *c)
 	 * corner with MEM ACC level 3.
 	 */
 	if (c->mem_acc_threshold_vc ||
-			c->mem_acc_threshold_pre_vc == OSM_SEQ_MINUS_ONE)
+	    c->mem_acc_threshold_pre_vc == OSM_SEQ_MINUS_ONE)
 		for (i = 0; i < c->num_entries; i++)
 			if (c->mem_acc_threshold_vc == table[i].virtual_corner)
 				scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(32),
-										 L_VAL(table[i].freq_data));
+					     L_VAL(table[i].freq_data));
 
 	return;
 }
@@ -2593,18 +2240,16 @@ void clk_osm_setup_sequencer(struct clk_osm *c)
 	u32 i;
 
 	pr_debug("Setting up sequencer for cluster=%d\n", c->cluster_num);
-	for (i = 0; i < ARRAY_SIZE(seq_instr); i++)
-	{
+	for (i = 0; i < ARRAY_SIZE(seq_instr); i++) {
 		clk_osm_write_reg(c, seq_instr[i],
-											(long)(SEQ_MEM_ADDR + i * 4));
+				  (long)(SEQ_MEM_ADDR + i * 4));
 	}
 
 	pr_debug("Setting up sequencer branch instructions for cluster=%d\n",
-					 c->cluster_num);
-	for (i = 0; i < ARRAY_SIZE(seq_br_instr); i++)
-	{
+		c->cluster_num);
+	for (i = 0; i < ARRAY_SIZE(seq_br_instr); i++) {
 		clk_osm_write_reg(c, seq_br_instr[i],
-											(long)(SEQ_CFG_BR_ADDR + i * 4));
+				  (long)(SEQ_CFG_BR_ADDR + i * 4));
 	}
 }
 
@@ -2636,69 +2281,71 @@ static void clk_osm_setup_osm_was(struct clk_osm *c)
 	val |= IGNORE_PLL_LOCK_MASK;
 	cc_hyst = clk_osm_read_reg(c, SPM_CC_HYSTERESIS);
 
-	if (c->secure_init)
-	{
+	if (c->secure_init) {
 		clk_osm_write_reg(c, val, SEQ_REG(47));
 		val &= ~IGNORE_PLL_LOCK_MASK;
 		clk_osm_write_reg(c, val, SEQ_REG(48));
 
 		clk_osm_write_reg(c, c->pbases[OSM_BASE] + SEQ_REG(42),
-											SEQ_REG(40));
+				  SEQ_REG(40));
 		clk_osm_write_reg(c, c->pbases[OSM_BASE] + SEQ_REG(43),
-											SEQ_REG(41));
+				  SEQ_REG(41));
 		clk_osm_write_reg(c, 0x1, SEQ_REG(44));
 		clk_osm_write_reg(c, 0x0, SEQ_REG(45));
 		clk_osm_write_reg(c, c->pbases[OSM_BASE] + PDN_FSM_CTRL_REG,
-											SEQ_REG(46));
+				  SEQ_REG(46));
 
 		/* C2D/C3 + D2D workaround */
 		clk_osm_write_reg(c, c->pbases[OSM_BASE] + SPM_CC_HYSTERESIS,
-											SEQ_REG(6));
+				  SEQ_REG(6));
 		clk_osm_write_reg(c, cc_hyst, SEQ_REG(7));
 
 		/* Droop detector PLL lock detect workaround */
 		clk_osm_write_reg(c, PLL_DD_USER_CTL_LO_ENABLE, SEQ_REG(4));
 		clk_osm_write_reg(c, PLL_DD_USER_CTL_LO_DISABLE, SEQ_REG(5));
-		clk_osm_write_reg(c, c->cluster_num == 0 ? PLL_DD_D0_USER_CTL_LO : PLL_DD_D1_USER_CTL_LO, SEQ_REG(21));
+		clk_osm_write_reg(c, c->cluster_num == 0 ? PLL_DD_D0_USER_CTL_LO
+				  : PLL_DD_D1_USER_CTL_LO, SEQ_REG(21));
 
 		/* PLL lock detect and HMSS AHB clock workaround */
 		clk_osm_write_reg(c, 0x640, CFG_DELAY_VAL_3);
 
 		/* DxFSM workaround */
-		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17911200 : 0x17811200, SEQ_REG(22));
+		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17911200 :
+				  0x17811200, SEQ_REG(22));
 		clk_osm_write_reg(c, 0x80800, SEQ_REG(23));
 		clk_osm_write_reg(c, 0x179D1100, SEQ_REG(24));
 		clk_osm_write_reg(c, 0x11f, SEQ_REG(25));
-		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17912000 : 0x17811290, SEQ_REG(26));
-		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17911290 : 0x17811290, SEQ_REG(20));
-		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17811290 : 0x17911290, SEQ_REG(32));
+		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17912000 :
+				  0x17811290, SEQ_REG(26));
+		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17911290 :
+				  0x17811290, SEQ_REG(20));
+		clk_osm_write_reg(c, c->cluster_num == 0 ? 0x17811290 :
+				  0x17911290, SEQ_REG(32));
 		clk_osm_write_reg(c, 0x179D4020, SEQ_REG(35));
 		clk_osm_write_reg(c, 0x11f, SEQ_REG(25));
 		clk_osm_write_reg(c, 0xa, SEQ_REG(86));
 		clk_osm_write_reg(c, 0xe, SEQ_REG(87));
 		clk_osm_write_reg(c, 0x00400000, SEQ_REG(88));
 		clk_osm_write_reg(c, 0x00700000, SEQ_REG(89));
-	}
-	else
-	{
+	} else {
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(47), val);
 		val &= ~IGNORE_PLL_LOCK_MASK;
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(48), val);
 
 		/* C2D/C3 + D2D workaround */
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(7),
-								 cc_hyst);
+			     cc_hyst);
 
 		/* Droop detector PLL lock detect workaround */
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(4),
-								 PLL_DD_USER_CTL_LO_ENABLE);
+			     PLL_DD_USER_CTL_LO_ENABLE);
 	}
 
-	if (c->cluster_num == 0)
-	{
-		val = readl_relaxed(c->vbases[PLL_BASE] + PLL_TEST_CTL_HI) | BIT(13);
+	if (c->cluster_num == 0) {
+		val = readl_relaxed(c->vbases[PLL_BASE] + PLL_TEST_CTL_HI)
+			| BIT(13);
 		writel_relaxed(val, c->vbases[PLL_BASE] +
-														PLL_TEST_CTL_HI);
+			       PLL_TEST_CTL_HI);
 	}
 
 	/* Ensure writes complete before returning */
@@ -2710,17 +2357,15 @@ static void clk_osm_setup_fsms(struct clk_osm *c)
 	u32 val;
 
 	/* Reduction FSM */
-	if (c->red_fsm_en)
-	{
+	if (c->red_fsm_en) {
 		val = clk_osm_read_reg(c, VMIN_REDUC_ENABLE_REG) | BIT(0);
 		clk_osm_write_reg(c, val, VMIN_REDUC_ENABLE_REG);
 		clk_osm_write_reg(c, BVAL(15, 0, clk_osm_count_ns(c, 10000)),
-											VMIN_REDUC_TIMER_REG);
+				  VMIN_REDUC_TIMER_REG);
 	}
 
 	/* Boost FSM */
-	if (c->boost_fsm_en)
-	{
+	if (c->boost_fsm_en) {
 		val = clk_osm_read_reg(c, PDN_FSM_CTRL_REG);
 		clk_osm_write_reg(c, val | CC_BOOST_EN_MASK, PDN_FSM_CTRL_REG);
 
@@ -2740,11 +2385,10 @@ static void clk_osm_setup_fsms(struct clk_osm *c)
 	}
 
 	/* Safe Freq FSM */
-	if (c->safe_fsm_en)
-	{
+	if (c->safe_fsm_en) {
 		val = clk_osm_read_reg(c, PDN_FSM_CTRL_REG);
 		clk_osm_write_reg(c, val | DCVS_BOOST_EN_MASK,
-											PDN_FSM_CTRL_REG);
+				  PDN_FSM_CTRL_REG);
 
 		val = clk_osm_read_reg(c, DCVS_BOOST_TIMER_REG0);
 		val |= BVAL(15, 0, clk_osm_count_ns(c, PLL_WAIT_LOCK_TIME_NS));
@@ -2759,11 +2403,11 @@ static void clk_osm_setup_fsms(struct clk_osm *c)
 		val = clk_osm_read_reg(c, DCVS_BOOST_TIMER_REG2);
 		val |= BVAL(15, 0, clk_osm_count_ns(c, DEXT_DECREMENT_WAIT_NS));
 		clk_osm_write_reg(c, val, DCVS_BOOST_TIMER_REG2);
+
 	}
 
 	/* PS FSM */
-	if (c->ps_fsm_en)
-	{
+	if (c->ps_fsm_en) {
 		val = clk_osm_read_reg(c, PDN_FSM_CTRL_REG);
 		clk_osm_write_reg(c, val | PS_BOOST_EN_MASK, PDN_FSM_CTRL_REG);
 
@@ -2787,8 +2431,7 @@ static void clk_osm_setup_fsms(struct clk_osm *c)
 		clk_osm_write_reg(c, 0x5, BOOST_PROG_SYNC_DELAY_REG);
 
 	/* Droop FSM */
-	if (c->wfx_fsm_en)
-	{
+	if (c->wfx_fsm_en) {
 		/* WFx FSM */
 		val = clk_osm_read_reg(c, PDN_FSM_CTRL_REG);
 		clk_osm_write_reg(c, val | WFX_DROOP_EN_MASK, PDN_FSM_CTRL_REG);
@@ -2798,48 +2441,45 @@ static void clk_osm_setup_fsms(struct clk_osm *c)
 		clk_osm_write_reg(c, val, DROOP_UNSTALL_TIMER_CTRL_REG);
 
 		val = clk_osm_read_reg(c,
-													 DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
+			       DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
 		val |= BVAL(31, 16, clk_osm_count_ns(c, 250));
 		clk_osm_write_reg(c, val,
-											DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
+				DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
 	}
 
 	/* PC/RET FSM */
-	if (c->pc_fsm_en)
-	{
+	if (c->pc_fsm_en) {
 		val = clk_osm_read_reg(c, PDN_FSM_CTRL_REG);
 		clk_osm_write_reg(c, val | PC_RET_EXIT_DROOP_EN_MASK,
-											PDN_FSM_CTRL_REG);
+				  PDN_FSM_CTRL_REG);
 
 		val = clk_osm_read_reg(c, DROOP_UNSTALL_TIMER_CTRL_REG);
 		val |= BVAL(15, 0, clk_osm_count_ns(c, 500));
 		clk_osm_write_reg(c, val, DROOP_UNSTALL_TIMER_CTRL_REG);
 
 		val = clk_osm_read_reg(c,
-													 DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
+				DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
 		val |= BVAL(15, 0, clk_osm_count_ns(c, 250));
 		clk_osm_write_reg(c, val,
-											DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
+				DROOP_WAIT_TO_RELEASE_TIMER_CTRL0_REG);
 	}
 
 	/* DCVS droop FSM - only if RCGwRC is not used for di/dt control */
-	if (c->droop_fsm_en)
-	{
+	if (c->droop_fsm_en) {
 		val = clk_osm_read_reg(c, PDN_FSM_CTRL_REG);
 		clk_osm_write_reg(c, val | DCVS_DROOP_EN_MASK,
-											PDN_FSM_CTRL_REG);
+				  PDN_FSM_CTRL_REG);
 	}
 
-	if (c->wfx_fsm_en || c->ps_fsm_en || c->droop_fsm_en)
-	{
+	if (c->wfx_fsm_en || c->ps_fsm_en || c->droop_fsm_en) {
 		clk_osm_write_reg(c, 0x1, DROOP_PROG_SYNC_DELAY_REG);
 		clk_osm_write_reg(c, clk_osm_count_ns(c, 5),
-											DROOP_RELEASE_TIMER_CTRL);
+				  DROOP_RELEASE_TIMER_CTRL);
 		clk_osm_write_reg(c, clk_osm_count_ns(c, 500),
-											DCVS_DROOP_TIMER_CTRL);
+				  DCVS_DROOP_TIMER_CTRL);
 		val = clk_osm_read_reg(c, DROOP_CTRL_REG);
 		val |= BIT(31) | BVAL(22, 16, 0x2) |
-					 BVAL(6, 0, 0x8);
+			BVAL(6, 0, 0x8);
 		clk_osm_write_reg(c, val, DROOP_CTRL_REG);
 	}
 
@@ -2850,13 +2490,13 @@ static void clk_osm_setup_fsms(struct clk_osm *c)
 }
 
 static void clk_osm_do_additional_setup(struct clk_osm *c,
-																				struct platform_device *pdev)
+					struct platform_device *pdev)
 {
 	if (!c->secure_init)
 		return;
 
 	dev_info(&pdev->dev, "Performing additional OSM setup due to lack of TZ for cluster=%d\n",
-					 c->cluster_num);
+		 c->cluster_num);
 
 	clk_osm_write_reg(c, BVAL(23, 16, 0xF), SPM_CC_CTRL);
 
@@ -2886,7 +2526,7 @@ static void clk_osm_do_additional_setup(struct clk_osm *c,
 	clk_osm_setup_itm_to_osm_handoff();
 
 	pr_debug("seq_size: %lu, seqbr_size: %lu\n", ARRAY_SIZE(seq_instr),
-					 ARRAY_SIZE(seq_br_instr));
+						ARRAY_SIZE(seq_br_instr));
 	clk_osm_setup_sequencer(&pwrcl_clk);
 	clk_osm_setup_sequencer(&perfcl_clk);
 }
@@ -2899,46 +2539,40 @@ static void clk_osm_apm_vc_setup(struct clk_osm *c)
 	 * corner is the first corner which requires switch
 	 * sequence of APM from MX to APC.
 	 */
-	if (c->secure_init)
-	{
+	if (c->secure_init) {
 		clk_osm_write_reg(c, c->apm_threshold_vc, SEQ_REG(1));
 		clk_osm_write_reg(c, c->apm_crossover_vc, SEQ_REG(72));
 		clk_osm_write_reg(c, c->pbases[OSM_BASE] + SEQ_REG(1),
-											SEQ_REG(8));
+				  SEQ_REG(8));
 		clk_osm_write_reg(c, c->apm_threshold_vc,
-											SEQ_REG(15));
+				  SEQ_REG(15));
 		clk_osm_write_reg(c, c->apm_threshold_pre_vc,
-											SEQ_REG(31));
+				  SEQ_REG(31));
 		clk_osm_write_reg(c, 0x3b | c->apm_threshold_vc << 6,
-											SEQ_REG(73));
+				  SEQ_REG(73));
 		clk_osm_write_reg(c, 0x39 | c->apm_threshold_vc << 6,
-											SEQ_REG(76));
+				  SEQ_REG(76));
 
 		/* Ensure writes complete before returning */
 		clk_osm_mb(c, OSM_BASE);
-	}
-	else
-	{
-		if (msm8998_v1)
-		{
+	} else {
+		if (msm8998_v1) {
 			scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(1),
-									 c->apm_threshold_vc);
+				     c->apm_threshold_vc);
 			scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(73),
-									 0x3b | c->apm_threshold_vc << 6);
-		}
-		else if (msm8998_v2)
-		{
+				     0x3b | c->apm_threshold_vc << 6);
+		} else if (msm8998_v2) {
 			clk_osm_write_reg(c, c->apm_threshold_vc,
-												SEQ_REG1_MSM8998_V2);
+					  SEQ_REG1_MSM8998_V2);
 		}
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(72),
-								 c->apm_crossover_vc);
+			     c->apm_crossover_vc);
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(15),
-								 c->apm_threshold_vc);
+			     c->apm_threshold_vc);
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(31),
-								 c->apm_threshold_pre_vc);
+			     c->apm_threshold_pre_vc);
 		scm_io_write(c->pbases[OSM_BASE] + SEQ_REG(76),
-								 0x39 | c->apm_threshold_vc << 6);
+			     0x39 | c->apm_threshold_vc << 6);
 	}
 }
 
@@ -2950,33 +2584,29 @@ static irqreturn_t clk_osm_debug_irq_cb(int irq, void *data)
 	int i;
 
 	val = clk_osm_read_reg(c, DCVS_PERF_STATE_DEVIATION_INTR_STAT);
-	if (val & BIT(0))
-	{
+	if (val & BIT(0)) {
 		pr_info("OS DCVS performance state deviated\n");
 		clk_osm_write_reg(c, BIT(0),
-											DCVS_PERF_STATE_DEVIATION_INTR_CLEAR);
+				  DCVS_PERF_STATE_DEVIATION_INTR_CLEAR);
 	}
 
 	val = clk_osm_read_reg(c,
-												 DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_STAT);
-	if (val & BIT(0))
-	{
+			       DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_STAT);
+	if (val & BIT(0)) {
 		pr_info("OS DCVS performance state corrected\n");
 		clk_osm_write_reg(c, BIT(0),
-											DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_CLEAR);
+			  DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_CLEAR);
 	}
 
 	val = clk_osm_read_reg(c, DCVS_PERF_STATE_MET_INTR_STAT);
-	if (val & BIT(0))
-	{
+	if (val & BIT(0)) {
 		pr_info("OS DCVS performance state desired reached\n");
 		clk_osm_write_reg(c, BIT(0), DCVS_PERF_STATE_MET_INTR_CLR);
 	}
 
 	factor = c->cycle_counter_factor ? c->cycle_counter_factor : 1;
 
-	for (i = 0; i < c->cycle_counter_reads; i++)
-	{
+	for (i = 0; i < c->cycle_counter_reads; i++) {
 		first = clk_osm_read_reg(c, OSM_CYCLE_COUNTER_STATUS_REG);
 
 		if (c->cycle_counter_delay)
@@ -2987,27 +2617,26 @@ static irqreturn_t clk_osm_debug_irq_cb(int irq, void *data)
 	}
 
 	pr_info("cluster=%d, L_VAL (estimated)=%lu\n",
-					c->cluster_num, total_delta / c->cycle_counter_factor);
+		c->cluster_num, total_delta / c->cycle_counter_factor);
 
 	return IRQ_HANDLED;
 }
 
 static int clk_osm_setup_irq(struct platform_device *pdev, struct clk_osm *c,
-														 char *irq_name)
+			 char *irq_name)
 {
 	int rc = 0;
 
 	rc = c->irq = platform_get_irq_byname(pdev, irq_name);
-	if (rc < 0)
-	{
+	if (rc < 0) {
 		dev_err(&pdev->dev, "%s irq not specified\n", irq_name);
 		return rc;
 	}
 
 	rc = devm_request_irq(&pdev->dev, c->irq,
-												clk_osm_debug_irq_cb,
-												IRQF_TRIGGER_RISING | IRQF_SHARED,
-												"OSM IRQ", c);
+			      clk_osm_debug_irq_cb,
+			      IRQF_TRIGGER_RISING | IRQF_SHARED,
+			      "OSM IRQ", c);
 	if (rc)
 		dev_err(&pdev->dev, "Request IRQ failed for OSM IRQ\n");
 
@@ -3019,10 +2648,8 @@ static u32 find_voltage(struct clk_osm *c, unsigned long rate)
 	struct osm_entry *table = c->osm_table;
 	int entries = c->num_entries, i;
 
-	for (i = 0; i < entries; i++)
-	{
-		if (rate == table[i].frequency)
-		{
+	for (i = 0; i < entries; i++) {
+		if (rate == table[i].frequency) {
 			/* OPP table voltages have units of mV */
 			return table[i].open_loop_volt * 1000;
 		}
@@ -3040,19 +2667,16 @@ static int add_opp(struct clk_osm *c, struct device *dev)
 	unsigned long min_rate = c->c.fmax[0];
 	unsigned long max_rate = c->c.fmax[c->c.num_fmax - 1];
 
-	while (1)
-	{
+	while (1) {
 		rate = c->c.fmax[j++];
 		uv = find_voltage(c, rate);
-		if (uv <= 0)
-		{
+		if (uv <= 0) {
 			pr_warn("No voltage for %lu.\n", rate);
 			return -EINVAL;
 		}
 
 		rc = dev_pm_opp_add(dev, rate, uv);
-		if (rc)
-		{
+		if (rc) {
 			pr_warn("failed to add OPP for %lu\n", rate);
 			return rc;
 		}
@@ -3065,12 +2689,11 @@ static int add_opp(struct clk_osm *c, struct device *dev)
 		 */
 		if (rate == min_rate)
 			pr_info("Set OPP pair (%lu Hz, %d uv) on %s\n",
-							rate, uv, dev_name(dev));
+				rate, uv, dev_name(dev));
 
-		if (rate == max_rate && max_rate != min_rate)
-		{
+		if (rate == max_rate && max_rate != min_rate) {
 			pr_info("Set OPP pair (%lu Hz, %d uv) on %s\n",
-							rate, uv, dev_name(dev));
+				rate, uv, dev_name(dev));
 			break;
 		}
 
@@ -3096,20 +2719,17 @@ static struct clk *logical_cpu_to_clk(int cpu)
 		goto fail;
 
 	cell = of_get_property(cpu_node, "reg", NULL);
-	if (!cell)
-	{
+	if (!cell) {
 		pr_err("%s: missing reg property\n", cpu_node->full_name);
 		goto fail;
 	}
 
 	hwid = of_read_number(cell, of_n_addr_cells(cpu_node));
-	if ((hwid | pwrcl_clk.cpu_reg_mask) == pwrcl_clk.cpu_reg_mask)
-	{
+	if ((hwid | pwrcl_clk.cpu_reg_mask) == pwrcl_clk.cpu_reg_mask) {
 		cpu_clk_map[cpu] = &pwrcl_clk.c;
 		return &pwrcl_clk.c;
 	}
-	if ((hwid | perfcl_clk.cpu_reg_mask) == perfcl_clk.cpu_reg_mask)
-	{
+	if ((hwid | perfcl_clk.cpu_reg_mask) == perfcl_clk.cpu_reg_mask) {
 		cpu_clk_map[cpu] = &perfcl_clk.c;
 		return &perfcl_clk.c;
 	}
@@ -3128,8 +2748,7 @@ static u64 clk_osm_get_cpu_cycle_counter(int cpu)
 		c = &pwrcl_clk;
 	else if (logical_cpu_to_clk(cpu) == &perfcl_clk.c)
 		c = &perfcl_clk;
-	else
-	{
+	else {
 		pr_err("no clock device for CPU=%d\n", cpu);
 		return 0;
 	}
@@ -3137,15 +2756,12 @@ static u64 clk_osm_get_cpu_cycle_counter(int cpu)
 	spin_lock_irqsave(&c->lock, flags);
 	val = clk_osm_read_reg_no_log(c, OSM_CYCLE_COUNTER_STATUS_REG);
 
-	if (val < c->prev_cycle_counter)
-	{
+	if (val < c->prev_cycle_counter) {
 		/* Handle counter overflow */
 		c->total_cycle_counter += UINT_MAX -
-															c->prev_cycle_counter + val;
+			c->prev_cycle_counter + val;
 		c->prev_cycle_counter = val;
-	}
-	else
-	{
+	} else {
 		c->total_cycle_counter += val - c->prev_cycle_counter;
 		c->prev_cycle_counter = val;
 	}
@@ -3158,17 +2774,14 @@ static void populate_opp_table(struct platform_device *pdev)
 {
 	int cpu;
 
-	for_each_possible_cpu(cpu)
-	{
-		if (logical_cpu_to_clk(cpu) == &pwrcl_clk.c)
-		{
+	for_each_possible_cpu(cpu) {
+		if (logical_cpu_to_clk(cpu) == &pwrcl_clk.c) {
 			WARN(add_opp(&pwrcl_clk, get_cpu_device(cpu)),
-					 "Failed to add OPP levels for power cluster\n");
+			     "Failed to add OPP levels for power cluster\n");
 		}
-		if (logical_cpu_to_clk(cpu) == &perfcl_clk.c)
-		{
+		if (logical_cpu_to_clk(cpu) == &perfcl_clk.c) {
 			WARN(add_opp(&perfcl_clk, get_cpu_device(cpu)),
-					 "Failed to add OPP levels for perf cluster\n");
+			     "Failed to add OPP levels for perf cluster\n");
 		}
 	}
 }
@@ -3185,15 +2798,16 @@ static int debugfs_set_trace_enable(void *data, u64 val)
 {
 	struct clk_osm *c = data;
 
-	clk_osm_masked_write_reg(c, val ? TRACE_CTRL_ENABLE : TRACE_CTRL_DISABLE,
-													 TRACE_CTRL, TRACE_CTRL_EN_MASK);
+	clk_osm_masked_write_reg(c, val ? TRACE_CTRL_ENABLE :
+				 TRACE_CTRL_DISABLE,
+				 TRACE_CTRL, TRACE_CTRL_EN_MASK);
 	c->trace_en = val ? true : false;
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_trace_enable_fops,
-												debugfs_get_trace_enable,
-												debugfs_set_trace_enable,
-												"%llu\n");
+			debugfs_get_trace_enable,
+			debugfs_set_trace_enable,
+			"%llu\n");
 
 static int debugfs_get_wdog_trace(void *data, u64 *val)
 {
@@ -3208,24 +2822,22 @@ static int debugfs_set_wdog_trace(void *data, u64 val)
 	struct clk_osm *c = data;
 	int regval;
 
-	if (msm8998_v2)
-	{
+	if (msm8998_v2) {
 		regval = clk_osm_read_reg(c, TRACE_CTRL);
-		regval = val ? regval | TRACE_CTRL_ENABLE_WDOG_STATUS : regval & ~TRACE_CTRL_ENABLE_WDOG_STATUS;
+		regval = val ? regval | TRACE_CTRL_ENABLE_WDOG_STATUS :
+			regval & ~TRACE_CTRL_ENABLE_WDOG_STATUS;
 		clk_osm_write_reg(c, regval, TRACE_CTRL);
 		c->wdog_trace_en = val ? true : false;
-	}
-	else
-	{
+	} else {
 		pr_info("wdog status registers enabled by default\n");
 	}
 
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_trace_wdog_enable_fops,
-												debugfs_get_wdog_trace,
-												debugfs_set_wdog_trace,
-												"%llu\n");
+			debugfs_get_wdog_trace,
+			debugfs_set_wdog_trace,
+			"%llu\n");
 
 #define MAX_DEBUG_BUF_LEN 15
 
@@ -3233,30 +2845,26 @@ static DEFINE_MUTEX(debug_buf_mutex);
 static char debug_buf[MAX_DEBUG_BUF_LEN];
 
 static ssize_t debugfs_trace_method_set(struct file *file,
-																				const char __user *buf,
-																				size_t count, loff_t *ppos)
+					const char __user *buf,
+					size_t count, loff_t *ppos)
 {
 	struct clk_osm *c = file->private_data;
 	u32 val;
 
-	if (IS_ERR(file) || file == NULL)
-	{
+	if (IS_ERR(file) || file == NULL) {
 		pr_err("input error %ld\n", PTR_ERR(file));
 		return -EINVAL;
 	}
 
-	if (!c)
-	{
+	if (!c) {
 		pr_err("invalid clk_osm handle\n");
 		return -EINVAL;
 	}
 
-	if (count < MAX_DEBUG_BUF_LEN)
-	{
+	if (count < MAX_DEBUG_BUF_LEN) {
 		mutex_lock(&debug_buf_mutex);
 
-		if (copy_from_user(debug_buf, (void __user *)buf, count))
-		{
+		if (copy_from_user(debug_buf, (void __user *) buf, count)) {
 			mutex_unlock(&debug_buf_mutex);
 			return -EFAULT;
 		}
@@ -3264,19 +2872,17 @@ static ssize_t debugfs_trace_method_set(struct file *file,
 		mutex_unlock(&debug_buf_mutex);
 
 		/* check that user entered a supported packet type */
-		if (strcmp(debug_buf, "periodic\n") == 0)
-		{
-			clk_osm_write_reg(c, clk_osm_count_ns(c, PERIODIC_TRACE_DEFAULT_NS),
-												PERIODIC_TRACE_TIMER_CTRL);
+		if (strcmp(debug_buf, "periodic\n") == 0) {
+			clk_osm_write_reg(c, clk_osm_count_ns(c,
+					      PERIODIC_TRACE_DEFAULT_NS),
+					  PERIODIC_TRACE_TIMER_CTRL);
 			clk_osm_masked_write_reg(c,
-															 TRACE_CTRL_PERIODIC_TRACE_ENABLE,
-															 TRACE_CTRL, TRACE_CTRL_PERIODIC_TRACE_EN_MASK);
+				 TRACE_CTRL_PERIODIC_TRACE_ENABLE,
+				 TRACE_CTRL, TRACE_CTRL_PERIODIC_TRACE_EN_MASK);
 			c->trace_method = PERIODIC_PACKET;
 			c->trace_periodic_timer = PERIODIC_TRACE_DEFAULT_NS;
 			return count;
-		}
-		else if (strcmp(debug_buf, "xor\n") == 0)
-		{
+		} else if (strcmp(debug_buf, "xor\n") == 0) {
 			val = clk_osm_read_reg(c, TRACE_CTRL);
 			val &= ~TRACE_CTRL_PERIODIC_TRACE_ENABLE;
 			clk_osm_write_reg(c, val, TRACE_CTRL);
@@ -3290,19 +2896,17 @@ static ssize_t debugfs_trace_method_set(struct file *file,
 }
 
 static ssize_t debugfs_trace_method_get(struct file *file, char __user *buf,
-																				size_t count, loff_t *ppos)
+					size_t count, loff_t *ppos)
 {
 	struct clk_osm *c = file->private_data;
 	int len = 0, rc;
 
-	if (IS_ERR(file) || file == NULL)
-	{
+	if (IS_ERR(file) || file == NULL) {
 		pr_err("input error %ld\n", PTR_ERR(file));
 		return -EINVAL;
 	}
 
-	if (!c)
-	{
+	if (!c) {
 		pr_err("invalid clk_osm handle\n");
 		return -EINVAL;
 	}
@@ -3314,8 +2918,8 @@ static ssize_t debugfs_trace_method_get(struct file *file, char __user *buf,
 	else if (c->trace_method == XOR_PACKET)
 		len = snprintf(debug_buf, sizeof(debug_buf), "xor\n");
 
-	rc = simple_read_from_buffer((void __user *)buf, count, ppos,
-															 (void *)debug_buf, len);
+	rc = simple_read_from_buffer((void __user *) buf, count, ppos,
+				     (void *) debug_buf, len);
 
 	mutex_unlock(&debug_buf_mutex);
 
@@ -3324,8 +2928,7 @@ static ssize_t debugfs_trace_method_get(struct file *file, char __user *buf,
 
 static int debugfs_trace_method_open(struct inode *inode, struct file *file)
 {
-	if (IS_ERR(file) || file == NULL)
-	{
+	if (IS_ERR(file) || file == NULL) {
 		pr_err("input error %ld\n", PTR_ERR(file));
 		return -EINVAL;
 	}
@@ -3335,9 +2938,9 @@ static int debugfs_trace_method_open(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations debugfs_trace_method_fops = {
-		.write = debugfs_trace_method_set,
-		.open = debugfs_trace_method_open,
-		.read = debugfs_trace_method_get,
+	.write	= debugfs_trace_method_set,
+	.open   = debugfs_trace_method_open,
+	.read	= debugfs_trace_method_get,
 };
 
 static int debugfs_get_trace_packet_id(void *data, u64 *val)
@@ -3352,22 +2955,21 @@ static int debugfs_set_trace_packet_id(void *data, u64 val)
 {
 	struct clk_osm *c = data;
 
-	if (val < TRACE_PACKET0 || val > TRACE_PACKET3)
-	{
+	if (val < TRACE_PACKET0 || val > TRACE_PACKET3) {
 		pr_err("supported trace IDs=%d-%d\n",
-					 TRACE_PACKET0, TRACE_PACKET3);
+		       TRACE_PACKET0, TRACE_PACKET3);
 		return 0;
 	}
 
 	clk_osm_masked_write_reg(c, val << TRACE_CTRL_PACKET_TYPE_SHIFT,
-													 TRACE_CTRL, TRACE_CTRL_PACKET_TYPE_MASK);
+				 TRACE_CTRL, TRACE_CTRL_PACKET_TYPE_MASK);
 	c->trace_id = val;
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_trace_packet_id_fops,
-												debugfs_get_trace_packet_id,
-												debugfs_set_trace_packet_id,
-												"%llu\n");
+			debugfs_get_trace_packet_id,
+			debugfs_set_trace_packet_id,
+			"%llu\n");
 
 static int debugfs_get_trace_periodic_timer(void *data, u64 *val)
 {
@@ -3381,22 +2983,21 @@ static int debugfs_set_trace_periodic_timer(void *data, u64 val)
 {
 	struct clk_osm *c = data;
 
-	if (val < PERIODIC_TRACE_MIN_NS || val > PERIODIC_TRACE_MAX_NS)
-	{
+	if (val < PERIODIC_TRACE_MIN_NS || val > PERIODIC_TRACE_MAX_NS) {
 		pr_err("supported periodic trace periods=%d-%ld ns\n",
-					 PERIODIC_TRACE_MIN_NS, PERIODIC_TRACE_MAX_NS);
+		       PERIODIC_TRACE_MIN_NS, PERIODIC_TRACE_MAX_NS);
 		return 0;
 	}
 
 	clk_osm_write_reg(c, clk_osm_count_ns(c, val),
-										PERIODIC_TRACE_TIMER_CTRL);
+			  PERIODIC_TRACE_TIMER_CTRL);
 	c->trace_periodic_timer = val;
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_trace_periodic_timer_fops,
-												debugfs_get_trace_periodic_timer,
-												debugfs_set_trace_periodic_timer,
-												"%llu\n");
+			debugfs_get_trace_periodic_timer,
+			debugfs_set_trace_periodic_timer,
+			"%llu\n");
 
 static int debugfs_get_perf_state_met_irq(void *data, u64 *val)
 {
@@ -3411,20 +3012,20 @@ static int debugfs_set_perf_state_met_irq(void *data, u64 val)
 	struct clk_osm *c = data;
 
 	clk_osm_write_reg(c, val ? 1 : 0,
-										DCVS_PERF_STATE_MET_INTR_EN);
+			  DCVS_PERF_STATE_MET_INTR_EN);
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_perf_state_met_irq_fops,
-												debugfs_get_perf_state_met_irq,
-												debugfs_set_perf_state_met_irq,
-												"%llu\n");
+			debugfs_get_perf_state_met_irq,
+			debugfs_set_perf_state_met_irq,
+			"%llu\n");
 
 static int debugfs_get_perf_state_deviation_irq(void *data, u64 *val)
 {
 	struct clk_osm *c = data;
 
 	*val = clk_osm_read_reg(c,
-													DCVS_PERF_STATE_DEVIATION_INTR_EN);
+				DCVS_PERF_STATE_DEVIATION_INTR_EN);
 	return 0;
 }
 
@@ -3433,20 +3034,20 @@ static int debugfs_set_perf_state_deviation_irq(void *data, u64 val)
 	struct clk_osm *c = data;
 
 	clk_osm_write_reg(c, val ? 1 : 0,
-										DCVS_PERF_STATE_DEVIATION_INTR_EN);
+			  DCVS_PERF_STATE_DEVIATION_INTR_EN);
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_perf_state_deviation_irq_fops,
-												debugfs_get_perf_state_deviation_irq,
-												debugfs_set_perf_state_deviation_irq,
-												"%llu\n");
+			debugfs_get_perf_state_deviation_irq,
+			debugfs_set_perf_state_deviation_irq,
+			"%llu\n");
 
 static int debugfs_get_perf_state_deviation_corrected_irq(void *data, u64 *val)
 {
 	struct clk_osm *c = data;
 
 	*val = clk_osm_read_reg(c,
-													DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_EN);
+			DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_EN);
 	return 0;
 }
 
@@ -3455,27 +3056,26 @@ static int debugfs_set_perf_state_deviation_corrected_irq(void *data, u64 val)
 	struct clk_osm *c = data;
 
 	clk_osm_write_reg(c, val ? 1 : 0,
-										DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_EN);
+		      DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_EN);
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_perf_state_deviation_corrected_irq_fops,
-												debugfs_get_perf_state_deviation_corrected_irq,
-												debugfs_set_perf_state_deviation_corrected_irq,
-												"%llu\n");
+			debugfs_get_perf_state_deviation_corrected_irq,
+			debugfs_set_perf_state_deviation_corrected_irq,
+			"%llu\n");
 
 static int debugfs_get_debug_reg(void *data, u64 *val)
 {
 	struct clk_osm *c = data;
 
-	if (!c->pbases[ACD_BASE])
-	{
+	if (!c->pbases[ACD_BASE]) {
 		pr_err("ACD base start not defined\n");
 		return -EINVAL;
 	}
 
 	if (c->acd_debugfs_addr >= ACD_MASTER_ONLY_REG_ADDR)
 		*val = readl_relaxed((char *)c->vbases[ACD_BASE] +
-												 c->acd_debugfs_addr);
+				     c->acd_debugfs_addr);
 	else
 		*val = clk_osm_acd_local_read_reg(c, c->acd_debugfs_addr);
 	return 0;
@@ -3485,8 +3085,7 @@ static int debugfs_set_debug_reg(void *data, u64 val)
 {
 	struct clk_osm *c = data;
 
-	if (!c->pbases[ACD_BASE])
-	{
+	if (!c->pbases[ACD_BASE]) {
 		pr_err("ACD base start not defined\n");
 		return -EINVAL;
 	}
@@ -3495,21 +3094,20 @@ static int debugfs_set_debug_reg(void *data, u64 val)
 		clk_osm_acd_master_write_reg(c, val, c->acd_debugfs_addr);
 	else
 		clk_osm_acd_master_write_through_reg(c, val,
-																				 c->acd_debugfs_addr);
+						     c->acd_debugfs_addr);
 
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_acd_debug_reg_fops,
-												debugfs_get_debug_reg,
-												debugfs_set_debug_reg,
-												"0x%llx\n");
+			debugfs_get_debug_reg,
+			debugfs_set_debug_reg,
+			"0x%llx\n");
 
 static int debugfs_get_debug_reg_addr(void *data, u64 *val)
 {
 	struct clk_osm *c = data;
 
-	if (!c->pbases[ACD_BASE])
-	{
+	if (!c->pbases[ACD_BASE]) {
 		pr_err("ACD base start not defined\n");
 		return -EINVAL;
 	}
@@ -3523,8 +3121,7 @@ static int debugfs_set_debug_reg_addr(void *data, u64 val)
 {
 	struct clk_osm *c = data;
 
-	if (!c->pbases[ACD_BASE])
-	{
+	if (!c->pbases[ACD_BASE]) {
 		pr_err("ACD base start not defined\n");
 		return -EINVAL;
 	}
@@ -3537,19 +3134,17 @@ static int debugfs_set_debug_reg_addr(void *data, u64 val)
 	return 0;
 }
 DEFINE_SIMPLE_ATTRIBUTE(debugfs_acd_debug_reg_addr_fops,
-												debugfs_get_debug_reg_addr,
-												debugfs_set_debug_reg_addr,
-												"%llu\n");
+			debugfs_get_debug_reg_addr,
+			debugfs_set_debug_reg_addr,
+			"%llu\n");
 
 static void populate_debugfs_dir(struct clk_osm *c)
 {
 	struct dentry *temp;
 
-	if (osm_debugfs_base == NULL)
-	{
+	if (osm_debugfs_base == NULL) {
 		osm_debugfs_base = debugfs_create_dir("osm", NULL);
-		if (IS_ERR_OR_NULL(osm_debugfs_base))
-		{
+		if (IS_ERR_OR_NULL(osm_debugfs_base)) {
 			pr_err("osm debugfs base directory creation failed\n");
 			osm_debugfs_base = NULL;
 			return;
@@ -3557,108 +3152,97 @@ static void populate_debugfs_dir(struct clk_osm *c)
 	}
 
 	c->debugfs = debugfs_create_dir(c->c.dbg_name, osm_debugfs_base);
-	if (IS_ERR_OR_NULL(c->debugfs))
-	{
+	if (IS_ERR_OR_NULL(c->debugfs)) {
 		pr_err("osm debugfs directory creation failed\n");
 		return;
 	}
 
 	temp = debugfs_create_file("perf_state_met_irq_enable",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_perf_state_met_irq_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+				   S_IRUGO | S_IWUSR,
+				   c->debugfs, c,
+				   &debugfs_perf_state_met_irq_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("perf_state_met_irq_enable debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("perf_state_deviation_irq_enable",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_perf_state_deviation_irq_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+				   S_IRUGO | S_IWUSR,
+				   c->debugfs, c,
+				   &debugfs_perf_state_deviation_irq_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("perf_state_deviation_irq_enable debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("perf_state_deviation_corrected_irq_enable",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_perf_state_deviation_corrected_irq_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_perf_state_deviation_corrected_irq_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_perf_state_deviation_corrected_irq_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("wdog_trace_enable",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_trace_wdog_enable_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_trace_wdog_enable_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_trace_wdog_enable_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("trace_enable",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_trace_enable_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_trace_enable_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_trace_enable_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("trace_method",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_trace_method_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_trace_method_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_trace_method_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("trace_packet_id",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_trace_packet_id_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_trace_packet_id_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_trace_packet_id_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("trace_periodic_timer",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_trace_periodic_timer_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_trace_periodic_timer_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_trace_periodic_timer_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("acd_debug_reg",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_acd_debug_reg_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_acd_debug_reg_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_acd_debug_reg_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
 	temp = debugfs_create_file("acd_debug_reg_addr",
-														 S_IRUGO | S_IWUSR,
-														 c->debugfs, c,
-														 &debugfs_acd_debug_reg_addr_fops);
-	if (IS_ERR_OR_NULL(temp))
-	{
+			   S_IRUGO | S_IWUSR,
+			   c->debugfs, c,
+			   &debugfs_acd_debug_reg_addr_fops);
+	if (IS_ERR_OR_NULL(temp)) {
 		pr_err("debugfs_acd_debug_reg_addr_fops debugfs file creation failed\n");
 		goto exit;
 	}
@@ -3669,20 +3253,19 @@ exit:
 }
 
 static int clk_osm_panic_callback(struct notifier_block *nfb,
-																	unsigned long event,
-																	void *data)
+				  unsigned long event,
+				  void *data)
 {
 	int i;
 	u32 value;
 	struct clk_osm *c = container_of(nfb,
-																	 struct clk_osm,
-																	 panic_notifier);
+					 struct clk_osm,
+					 panic_notifier);
 
-	for (i = 0; i < DEBUG_REG_NUM; i++)
-	{
+	for (i = 0; i < DEBUG_REG_NUM; i++) {
 		value = readl_relaxed(c->debug_regs[i]);
 		pr_err("%s_%d=0x%08x\n", clk_panic_reg_names[i],
-					 c->cluster_num, value);
+		       c->cluster_num, value);
 	}
 
 	return NOTIFY_OK;
@@ -3699,126 +3282,113 @@ static int cpu_clock_osm_driver_probe(struct platform_device *pdev)
 	char pwrclspeedbinstr[] = "qcom,pwrcl-speedbin0-v0";
 	char perfclspeedbinstr[] = "qcom,perfcl-speedbin0-v0";
 	struct cpu_cycle_counter_cb cb = {
-			.get_cpu_cycle_counter = clk_osm_get_cpu_cycle_counter,
+		.get_cpu_cycle_counter = clk_osm_get_cpu_cycle_counter,
 	};
 
 	if (of_find_compatible_node(NULL, NULL,
-															"qcom,cpu-clock-osm-msm8998-v1"))
-	{
+				    "qcom,cpu-clock-osm-msm8998-v1")) {
 		msm8998_v1 = true;
-	}
-	else if (of_find_compatible_node(NULL, NULL,
-																	 "qcom,cpu-clock-osm-msm8998-v2"))
-	{
+	} else if (of_find_compatible_node(NULL, NULL,
+					   "qcom,cpu-clock-osm-msm8998-v2")) {
 		msm8998_v2 = true;
 	}
 
 	rc = clk_osm_parse_dt_configs(pdev);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to parse device tree configurations\n");
 		return rc;
 	}
 
 	rc = clk_osm_resources_init(pdev);
-	if (rc)
-	{
+	if (rc) {
 		if (rc != -EPROBE_DEFER)
 			dev_err(&pdev->dev, "resources init failed, rc=%d\n",
-							rc);
+				rc);
 		return rc;
 	}
 
 	if ((pwrcl_clk.secure_init || perfcl_clk.secure_init) &&
-			msm8998_v2)
-	{
+	    msm8998_v2) {
 		pr_err("unsupported configuration for msm8998 v2\n");
 		return -EINVAL;
 	}
 
-	if (msm8998_v2)
-	{
+	if (msm8998_v2) {
 		/* Enable OSM WDOG registers */
 		clk_osm_masked_write_reg(&pwrcl_clk,
-														 TRACE_CTRL_ENABLE_WDOG_STATUS,
-														 TRACE_CTRL,
-														 TRACE_CTRL_ENABLE_WDOG_STATUS_MASK);
+				TRACE_CTRL_ENABLE_WDOG_STATUS,
+				TRACE_CTRL,
+				TRACE_CTRL_ENABLE_WDOG_STATUS_MASK);
 		clk_osm_masked_write_reg(&perfcl_clk,
-														 TRACE_CTRL_ENABLE_WDOG_STATUS,
-														 TRACE_CTRL,
-														 TRACE_CTRL_ENABLE_WDOG_STATUS_MASK);
+				TRACE_CTRL_ENABLE_WDOG_STATUS,
+				TRACE_CTRL,
+				TRACE_CTRL_ENABLE_WDOG_STATUS_MASK);
 	}
 
-	if (pwrcl_clk.vbases[EFUSE_BASE])
-	{
+	if (pwrcl_clk.vbases[EFUSE_BASE]) {
 		/* Multiple speed-bins are supported */
 		pte_efuse = readl_relaxed(pwrcl_clk.vbases[EFUSE_BASE]);
 		speedbin = ((pte_efuse >> PWRCL_EFUSE_SHIFT) &
-								PWRCL_EFUSE_MASK);
+			    PWRCL_EFUSE_MASK);
 		snprintf(pwrclspeedbinstr, ARRAY_SIZE(pwrclspeedbinstr),
-						 "qcom,pwrcl-speedbin%d-v%d", speedbin, pvs_ver);
+			 "qcom,pwrcl-speedbin%d-v%d", speedbin, pvs_ver);
 	}
 
 	dev_info(&pdev->dev, "using pwrcl speed bin %u and pvs_ver %d\n",
-					 speedbin, pvs_ver);
+		 speedbin, pvs_ver);
 
 	rc = clk_osm_get_lut(pdev, &pwrcl_clk,
-											 pwrclspeedbinstr);
-	if (rc)
-	{
+			     pwrclspeedbinstr);
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to get OSM LUT for power cluster, rc=%d\n",
-						rc);
+			rc);
 		return rc;
 	}
 
-	if (perfcl_clk.vbases[EFUSE_BASE])
-	{
+	if (perfcl_clk.vbases[EFUSE_BASE]) {
 		/* Multiple speed-bins are supported */
 		pte_efuse = readl_relaxed(perfcl_clk.vbases[EFUSE_BASE]);
 		speedbin = ((pte_efuse >> PERFCL_EFUSE_SHIFT) &
-								PERFCL_EFUSE_MASK);
+			    PERFCL_EFUSE_MASK);
 		snprintf(perfclspeedbinstr, ARRAY_SIZE(perfclspeedbinstr),
-						 "qcom,perfcl-speedbin%d-v%d", speedbin, pvs_ver);
+			 "qcom,perfcl-speedbin%d-v%d", speedbin, pvs_ver);
 	}
 
 	dev_info(&pdev->dev, "using perfcl speed bin %u and pvs_ver %d\n",
-					 speedbin, pvs_ver);
+		 speedbin, pvs_ver);
 
 	rc = clk_osm_get_lut(pdev, &perfcl_clk, perfclspeedbinstr);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to get OSM LUT for perf cluster, rc=%d\n",
-						rc);
+			rc);
 		return rc;
 	}
 
 	rc = clk_osm_resolve_open_loop_voltages(&pwrcl_clk);
-	if (rc)
-	{
+	if (rc) {
 		if (rc == -EPROBE_DEFER)
 			return rc;
 		dev_err(&pdev->dev, "Unable to determine open-loop voltages for power cluster, rc=%d\n",
-						rc);
+			rc);
 		return rc;
 	}
 
 	rc = clk_osm_resolve_open_loop_voltages(&perfcl_clk);
-	if (rc)
-	{
+	if (rc) {
 		if (rc == -EPROBE_DEFER)
 			return rc;
 		dev_err(&pdev->dev, "Unable to determine open-loop voltages for perf cluster, rc=%d\n",
-						rc);
+			rc);
 		return rc;
 	}
 
 	rc = clk_osm_resolve_crossover_corners(&pwrcl_clk, pdev,
-																				 "qcom,pwrcl-apcs-mem-acc-threshold-voltage");
+			       "qcom,pwrcl-apcs-mem-acc-threshold-voltage");
 	if (rc)
 		dev_info(&pdev->dev, "No MEM-ACC crossover corner programmed\n");
 
 	rc = clk_osm_resolve_crossover_corners(&perfcl_clk, pdev,
-																				 "qcom,perfcl-apcs-mem-acc-threshold-voltage");
+				"qcom,perfcl-apcs-mem-acc-threshold-voltage");
 	if (rc)
 		dev_info(&pdev->dev, "No MEM-ACC crossover corner programmed\n");
 
@@ -3829,38 +3399,33 @@ static int cpu_clock_osm_driver_probe(struct platform_device *pdev)
 	clk_osm_print_osm_table(&perfcl_clk);
 
 	rc = clk_osm_setup_hw_table(&pwrcl_clk);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "failed to setup power cluster hardware table\n");
 		goto exit;
 	}
 	rc = clk_osm_setup_hw_table(&perfcl_clk);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "failed to setup perf cluster hardware table\n");
 		goto exit;
 	}
 
 	/* Policy tuning */
 	rc = clk_osm_set_cc_policy(pdev);
-	if (rc < 0)
-	{
+	if (rc < 0) {
 		dev_err(&pdev->dev, "cc policy setup failed");
 		goto exit;
 	}
 
 	/* LLM Freq Policy Tuning */
 	rc = clk_osm_set_llm_freq_policy(pdev);
-	if (rc < 0)
-	{
+	if (rc < 0) {
 		dev_err(&pdev->dev, "LLM Frequency Policy setup failed");
 		goto exit;
 	}
 
 	/* LLM Voltage Policy Tuning */
 	rc = clk_osm_set_llm_volt_policy(pdev);
-	if (rc < 0)
-	{
+	if (rc < 0) {
 		dev_err(&pdev->dev, "Failed to set LLM voltage Policy");
 		goto exit;
 	}
@@ -3895,8 +3460,7 @@ static int cpu_clock_osm_driver_probe(struct platform_device *pdev)
 	clk_osm_setup_osm_was(&perfcl_clk);
 
 	if (of_property_read_bool(pdev->dev.of_node,
-														"qcom,osm-pll-setup"))
-	{
+				  "qcom,osm-pll-setup")) {
 		clk_osm_setup_cluster_pll(&pwrcl_clk);
 		clk_osm_setup_cluster_pll(&perfcl_clk);
 	}
@@ -3905,19 +3469,18 @@ static int cpu_clock_osm_driver_probe(struct platform_device *pdev)
 	spin_lock_init(&perfcl_clk.lock);
 
 	pwrcl_clk.panic_notifier.notifier_call = clk_osm_panic_callback;
-	/*CONFIG_SEC_DEBUG : temp for processing panic*/
-	//	atomic_notifier_chain_register(&panic_notifier_list,
-	//				       &pwrcl_clk.panic_notifier);
+/*CONFIG_SEC_DEBUG : temp for processing panic*/	
+//	atomic_notifier_chain_register(&panic_notifier_list,
+//				       &pwrcl_clk.panic_notifier);
 	perfcl_clk.panic_notifier.notifier_call = clk_osm_panic_callback;
-	//	atomic_notifier_chain_register(&panic_notifier_list,
-	//				       &perfcl_clk.panic_notifier);
+//	atomic_notifier_chain_register(&panic_notifier_list,
+//				       &perfcl_clk.panic_notifier);
 
 	rc = of_msm_clock_register(pdev->dev.of_node, cpu_clocks_osm,
-														 ARRAY_SIZE(cpu_clocks_osm));
-	if (rc)
-	{
+				   ARRAY_SIZE(cpu_clocks_osm));
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to register CPU clocks, rc=%d\n",
-						rc);
+			rc);
 		return rc;
 	}
 
@@ -3927,62 +3490,59 @@ static int cpu_clock_osm_driver_probe(struct platform_device *pdev)
 	 * this clock.
 	 */
 	rc = clk_set_rate(&sys_apcsaux_clk_gcc.c, init_rate);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to set init rate on hmss_gpll0, rc=%d\n",
-						rc);
+			rc);
 		return rc;
 	}
 	clk_prepare_enable(&sys_apcsaux_clk_gcc.c);
 
 	rc = clk_set_rate(&osm_clk_src.c, osm_clk_init_rate);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to set init rate on osm_clk, rc=%d\n",
-						rc);
+			rc);
 		goto exit2;
 	}
 
 	/* Make sure index zero is selected */
 	rc = clk_set_rate(&pwrcl_clk.c, init_rate);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to set init rate on pwr cluster, rc=%d\n",
-						rc);
+			rc);
 		goto exit2;
 	}
 
 	rc = clk_set_rate(&perfcl_clk.c, init_rate);
-	if (rc)
-	{
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to set init rate on perf cluster, rc=%d\n",
-						rc);
+			rc);
 		goto exit2;
 	}
 
 	get_online_cpus();
 
 	/* Enable OSM */
-	for_each_online_cpu(cpu)
-	{
+	for_each_online_cpu(cpu) {
 		WARN(clk_prepare_enable(logical_cpu_to_clk(cpu)),
-				 "Failed to enable clock for cpu %d\n", cpu);
+		     "Failed to enable clock for cpu %d\n", cpu);
 	}
 
 	/* Set final boot rate */
-	rc = clk_set_rate(&pwrcl_clk.c, msm8998_v1 ? MSM8998V1_PWRCL_BOOT_RATE : MSM8998V2_PWRCL_BOOT_RATE);
-	if (rc)
-	{
+	rc = clk_set_rate(&pwrcl_clk.c, msm8998_v1 ?
+			  MSM8998V1_PWRCL_BOOT_RATE :
+			  MSM8998V2_PWRCL_BOOT_RATE);
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to set boot rate on pwr cluster, rc=%d\n",
-						rc);
+			rc);
 		goto exit2;
 	}
 
-	rc = clk_set_rate(&perfcl_clk.c, msm8998_v1 ? MSM8998V1_PERFCL_BOOT_RATE : MSM8998V2_PERFCL_BOOT_RATE);
-	if (rc)
-	{
+	rc = clk_set_rate(&perfcl_clk.c, msm8998_v1 ?
+			  MSM8998V1_PERFCL_BOOT_RATE :
+			  MSM8998V2_PERFCL_BOOT_RATE);
+	if (rc) {
 		dev_err(&pdev->dev, "Unable to set boot rate on perf cluster, rc=%d\n",
-						rc);
+			rc);
 		goto exit2;
 	}
 
@@ -4003,22 +3563,23 @@ exit2:
 	clk_disable_unprepare(&sys_apcsaux_clk_gcc.c);
 exit:
 	dev_err(&pdev->dev, "OSM driver failed to initialize, rc=%d\n",
-					rc);
+		rc);
 	panic("Unable to Setup OSM");
 }
 
 static struct of_device_id match_table[] = {
-		{.compatible = "qcom,cpu-clock-osm-msm8998-v1"},
-		{.compatible = "qcom,cpu-clock-osm-msm8998-v2"},
-		{}};
+	{ .compatible = "qcom,cpu-clock-osm-msm8998-v1" },
+	{ .compatible = "qcom,cpu-clock-osm-msm8998-v2" },
+	{}
+};
 
 static struct platform_driver cpu_clock_osm_driver = {
-		.probe = cpu_clock_osm_driver_probe,
-		.driver = {
-				.name = "cpu-clock-osm",
-				.of_match_table = match_table,
-				.owner = THIS_MODULE,
-		},
+	.probe = cpu_clock_osm_driver_probe,
+	.driver = {
+		.name = "cpu-clock-osm",
+		.of_match_table = match_table,
+		.owner = THIS_MODULE,
+	},
 };
 
 static int __init cpu_clock_osm_init(void)

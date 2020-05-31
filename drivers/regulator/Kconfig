@@ -919,11 +919,6 @@ config REGULATOR_CPR
 	  to voltage value before writing to a voltage regulator API, such as
 	  that provided by spm-regulator driver.
 
-config VOLTAGE_CONTROL
-bool "Enable CPU voltage control"
-help
-	Enable CPU voltage control for MSM8994.
-
 config REGULATOR_CPR2_GFX
 	bool "RBCPR regulator driver for GFX"
 	depends on OF
