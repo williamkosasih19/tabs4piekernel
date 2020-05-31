@@ -944,7 +944,6 @@ static int ion_debug_client_show(struct seq_file *s, void *unused)
 	for (n = rb_first(&client->handles); n; n = rb_next(n)) {
 		struct ion_handle *handle = rb_entry(n, struct ion_handle,
 						     node);
-		unsigned int id = handle->buffer->heap->id;
 
 		seq_printf(s, "%16.16s: %16zx : %16d : %12pK",
 				handle->buffer->heap->name,
@@ -1545,7 +1544,23 @@ EXPORT_SYMBOL(ion_share_dma_buf_fd);
 
 bool ion_dma_buf_is_secure(struct dma_buf *dmabuf)
 {
-	return __ion_share_dma_buf_fd(client, handle, false);
+	struct ion_buffer *buffer;
+	enum ion_heap_type type;
+
+	/* Return false if we didn't create the buffer */
+	if (!dmabuf || dmabuf->ops != &dma_buf_ops)
+		return false;
+
+	buffer = dmabuf->priv;
+
+	if (!buffer || !buffer->heap)
+		return false;
+
+	type = buffer->heap->type;
+
+	return (type == (enum ion_heap_type)ION_HEAP_TYPE_SECURE_DMA ||
+		type == (enum ion_heap_type)ION_HEAP_TYPE_SYSTEM_SECURE) ?
+		true : false;
 }
 EXPORT_SYMBOL(ion_dma_buf_is_secure);
 
@@ -2005,6 +2020,44 @@ static const struct file_operations debug_heap_fops = {
 	.release = single_release,
 };
 
+void show_ion_system_heap_pool_size(struct ion_device *dev, struct seq_file *s)
+{
+	if (!down_read_trylock(&dev->lock)) {
+		if (s)
+			seq_printf(s, "SystemHeapPool: NA\n");
+		else
+			pr_cont("SystemHeapPool:NA ");
+		return;
+	}
+
+	show_ion_system_heap_pool_size_locked(s);
+	up_read(&dev->lock);
+}
+
+void show_ion_usage(struct ion_device *dev)
+{
+	struct ion_heap *heap;
+
+	if (!down_read_trylock(&dev->lock)) {
+		pr_err("Ion output would deadlock, can't print debug information\n");
+		return;
+	}
+
+	pr_info("%16.s %16.s %16.s\n", "Heap name", "Total heap size",
+					"Total orphaned size");
+	pr_info("---------------------------------\n");
+	plist_for_each_entry(heap, &dev->heaps, node) {
+		pr_info("%16.s 0x%16.lx 0x%16.lx\n",
+			heap->name, atomic_long_read(&heap->total_allocated),
+			atomic_long_read(&heap->total_allocated) -
+			atomic_long_read(&heap->total_handles));
+		if (heap->debug_show)
+			heap->debug_show(heap, NULL, 0);
+
+	}
+	up_read(&dev->lock);
+}
+
 static int debug_shrink_set(void *data, u64 val)
 {
 	struct ion_heap *heap = data;
@@ -2039,7 +2092,6 @@ static int debug_shrink_get(void *data, u64 *val)
 
 DEFINE_SIMPLE_ATTRIBUTE(debug_shrink_fops, debug_shrink_get,
 			debug_shrink_set, "%llu\n");
-#endif
 
 void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap)
 {
