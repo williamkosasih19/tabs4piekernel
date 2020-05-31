@@ -160,6 +160,7 @@ static void __init arm64_memory_present(void)
 #endif
 
 static phys_addr_t memory_limit = (phys_addr_t)ULLONG_MAX;
+static phys_addr_t bootloader_memory_limit;
 
 /*
  * Limit the memory size that was specified via FDT.
@@ -461,6 +462,8 @@ u8 rkp_def_init_done = 0;
 #endif
 void free_initmem(void)
 {
+	free_initmem_default(0);
+#ifdef CONFIG_DEBUG_RODATA
 	fixup_init();
 #endif
 	//free_alternatives_memory();
