@@ -721,12 +721,19 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
 	},
 #endif /* CONFIG_AS_LSE && CONFIG_ARM64_LSE_ATOMICS */
 	{
-		.desc = "32-bit EL0 Support",
-		.capability = ARM64_HAS_32BIT_EL0,
+		.desc = "Software prefetching using PRFM",
+		.capability = ARM64_HAS_NO_HW_PREFETCH,
+		.matches = has_no_hw_prefetch,
+	},
+#ifdef CONFIG_ARM64_UAO
+	{
+		.desc = "User Access Override",
+		.capability = ARM64_HAS_UAO,
 		.matches = has_cpuid_feature,
-		.sys_reg = SYS_ID_AA64PFR0_EL1,
-		.field_pos = ID_AA64PFR0_EL0_SHIFT,
-		.min_field_value = ID_AA64PFR0_EL0_32BIT_64BIT,
+		.sys_reg = SYS_ID_AA64MMFR2_EL1,
+		.field_pos = ID_AA64MMFR2_UAO_SHIFT,
+		.min_field_value = 1,
+		.enable = cpu_enable_uao,
 	},
 #endif /* CONFIG_ARM64_UAO */
 #ifdef CONFIG_ARM64_PAN
@@ -746,6 +753,14 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
 		.matches = unmap_kernel_at_el0,
 	},
 #endif
+	{
+		.desc = "32-bit EL0 Support",
+		.capability = ARM64_HAS_32BIT_EL0,
+		.matches = has_cpuid_feature,
+		.sys_reg = SYS_ID_AA64PFR0_EL1,
+		.field_pos = ID_AA64PFR0_EL0_SHIFT,
+		.min_field_value = ID_AA64PFR0_EL0_32BIT_64BIT,
+	},
 	{},
 };
 
@@ -779,7 +794,7 @@ static const struct arm64_cpu_capabilities arm64_hwcaps[] = {
 	{},
 };
 
-static void cap_set_hwcap(const struct arm64_cpu_capabilities *cap)
+static void __init cap_set_hwcap(const struct arm64_cpu_capabilities *cap)
 {
 	switch (cap->hwcap_type) {
 	case CAP_HWCAP:
@@ -824,12 +839,12 @@ static bool __maybe_unused cpus_have_hwcap(const struct arm64_cpu_capabilities *
 	return rc;
 }
 
-static void setup_cpu_hwcaps(void)
+static void __init setup_cpu_hwcaps(void)
 {
 	int i;
 	const struct arm64_cpu_capabilities *hwcaps = arm64_hwcaps;
 
-	for (i = 0; hwcaps[i].desc; i++)
+	for (i = 0; hwcaps[i].matches; i++)
 		if (hwcaps[i].matches(&hwcaps[i]))
 			cap_set_hwcap(&hwcaps[i]);
 }
@@ -839,11 +854,11 @@ void update_cpu_capabilities(const struct arm64_cpu_capabilities *caps,
 {
 	int i;
 
-	for (i = 0; caps[i].desc; i++) {
+	for (i = 0; caps[i].matches; i++) {
 		if (!caps[i].matches(&caps[i]))
 			continue;
 
-		if (!cpus_have_cap(caps[i].capability))
+		if (!cpus_have_cap(caps[i].capability) && caps[i].desc)
 			pr_info("%s %s\n", info, caps[i].desc);
 		cpus_set_cap(caps[i].capability);
 	}
@@ -853,11 +868,11 @@ void update_cpu_capabilities(const struct arm64_cpu_capabilities *caps,
  * Run through the enabled capabilities and enable() it on all active
  * CPUs
  */
-static void enable_cpu_capabilities(const struct arm64_cpu_capabilities *caps)
+void __init enable_cpu_capabilities(const struct arm64_cpu_capabilities *caps)
 {
 	int i;
 
-	for (i = 0; caps[i].desc; i++)
+	for (i = 0; caps[i].matches; i++)
 		if (caps[i].enable && cpus_have_cap(caps[i].capability))
 			/*
 			 * Use stop_machine() as it schedules the work allowing
@@ -865,7 +880,8 @@ static void enable_cpu_capabilities(const struct arm64_cpu_capabilities *caps)
 			 * uses an IPI, giving us a PSTATE that disappears when
 			 * we return.
 			 */
-			stop_machine(caps[i].enable, NULL, cpu_online_mask);
+			stop_machine(caps[i].enable, (void *)&caps[i],
+							cpu_online_mask);
 }
 
 #ifdef CONFIG_HOTPLUG_CPU
@@ -891,35 +907,36 @@ static inline void set_sys_caps_initialised(void)
 static u64 __raw_read_system_reg(u32 sys_id)
 {
 	switch (sys_id) {
-	case SYS_ID_PFR0_EL1:		return (u64)read_cpuid(ID_PFR0_EL1);
-	case SYS_ID_PFR1_EL1:		return (u64)read_cpuid(ID_PFR1_EL1);
-	case SYS_ID_DFR0_EL1:		return (u64)read_cpuid(ID_DFR0_EL1);
-	case SYS_ID_MMFR0_EL1:		return (u64)read_cpuid(ID_MMFR0_EL1);
-	case SYS_ID_MMFR1_EL1:		return (u64)read_cpuid(ID_MMFR1_EL1);
-	case SYS_ID_MMFR2_EL1:		return (u64)read_cpuid(ID_MMFR2_EL1);
-	case SYS_ID_MMFR3_EL1:		return (u64)read_cpuid(ID_MMFR3_EL1);
-	case SYS_ID_ISAR0_EL1:		return (u64)read_cpuid(ID_ISAR0_EL1);
-	case SYS_ID_ISAR1_EL1:		return (u64)read_cpuid(ID_ISAR1_EL1);
-	case SYS_ID_ISAR2_EL1:		return (u64)read_cpuid(ID_ISAR2_EL1);
-	case SYS_ID_ISAR3_EL1:		return (u64)read_cpuid(ID_ISAR3_EL1);
-	case SYS_ID_ISAR4_EL1:		return (u64)read_cpuid(ID_ISAR4_EL1);
-	case SYS_ID_ISAR5_EL1:		return (u64)read_cpuid(ID_ISAR4_EL1);
-	case SYS_MVFR0_EL1:		return (u64)read_cpuid(MVFR0_EL1);
-	case SYS_MVFR1_EL1:		return (u64)read_cpuid(MVFR1_EL1);
-	case SYS_MVFR2_EL1:		return (u64)read_cpuid(MVFR2_EL1);
+	case SYS_ID_PFR0_EL1:		return read_cpuid(SYS_ID_PFR0_EL1);
+	case SYS_ID_PFR1_EL1:		return read_cpuid(SYS_ID_PFR1_EL1);
+	case SYS_ID_DFR0_EL1:		return read_cpuid(SYS_ID_DFR0_EL1);
+	case SYS_ID_MMFR0_EL1:		return read_cpuid(SYS_ID_MMFR0_EL1);
+	case SYS_ID_MMFR1_EL1:		return read_cpuid(SYS_ID_MMFR1_EL1);
+	case SYS_ID_MMFR2_EL1:		return read_cpuid(SYS_ID_MMFR2_EL1);
+	case SYS_ID_MMFR3_EL1:		return read_cpuid(SYS_ID_MMFR3_EL1);
+	case SYS_ID_ISAR0_EL1:		return read_cpuid(SYS_ID_ISAR0_EL1);
+	case SYS_ID_ISAR1_EL1:		return read_cpuid(SYS_ID_ISAR1_EL1);
+	case SYS_ID_ISAR2_EL1:		return read_cpuid(SYS_ID_ISAR2_EL1);
+	case SYS_ID_ISAR3_EL1:		return read_cpuid(SYS_ID_ISAR3_EL1);
+	case SYS_ID_ISAR4_EL1:		return read_cpuid(SYS_ID_ISAR4_EL1);
+	case SYS_ID_ISAR5_EL1:		return read_cpuid(SYS_ID_ISAR4_EL1);
+	case SYS_MVFR0_EL1:		return read_cpuid(SYS_MVFR0_EL1);
+	case SYS_MVFR1_EL1:		return read_cpuid(SYS_MVFR1_EL1);
+	case SYS_MVFR2_EL1:		return read_cpuid(SYS_MVFR2_EL1);
 
-	case SYS_ID_AA64PFR0_EL1:	return (u64)read_cpuid(ID_AA64PFR0_EL1);
-	case SYS_ID_AA64PFR1_EL1:	return (u64)read_cpuid(ID_AA64PFR0_EL1);
-	case SYS_ID_AA64DFR0_EL1:	return (u64)read_cpuid(ID_AA64DFR0_EL1);
-	case SYS_ID_AA64DFR1_EL1:	return (u64)read_cpuid(ID_AA64DFR0_EL1);
-	case SYS_ID_AA64MMFR0_EL1:	return (u64)read_cpuid(ID_AA64MMFR0_EL1);
-	case SYS_ID_AA64MMFR1_EL1:	return (u64)read_cpuid(ID_AA64MMFR1_EL1);
-	case SYS_ID_AA64ISAR0_EL1:	return (u64)read_cpuid(ID_AA64ISAR0_EL1);
-	case SYS_ID_AA64ISAR1_EL1:	return (u64)read_cpuid(ID_AA64ISAR1_EL1);
+	case SYS_ID_AA64PFR0_EL1:	return read_cpuid(SYS_ID_AA64PFR0_EL1);
+	case SYS_ID_AA64PFR1_EL1:	return read_cpuid(SYS_ID_AA64PFR0_EL1);
+	case SYS_ID_AA64DFR0_EL1:	return read_cpuid(SYS_ID_AA64DFR0_EL1);
+	case SYS_ID_AA64DFR1_EL1:	return read_cpuid(SYS_ID_AA64DFR0_EL1);
+	case SYS_ID_AA64MMFR0_EL1:	return read_cpuid(SYS_ID_AA64MMFR0_EL1);
+	case SYS_ID_AA64MMFR1_EL1:	return read_cpuid(SYS_ID_AA64MMFR1_EL1);
+	case SYS_ID_AA64MMFR2_EL1:	return read_cpuid(SYS_ID_AA64MMFR2_EL1);
+	case SYS_ID_AA64ISAR0_EL1:	return read_cpuid(SYS_ID_AA64ISAR0_EL1);
+	case SYS_ID_AA64ISAR1_EL1:	return read_cpuid(SYS_ID_AA64ISAR1_EL1);
 
-	case SYS_CNTFRQ_EL0:		return (u64)read_cpuid(CNTFRQ_EL0);
-	case SYS_CTR_EL0:		return (u64)read_cpuid(CTR_EL0);
-	case SYS_DCZID_EL0:		return (u64)read_cpuid(DCZID_EL0);
+	case SYS_CNTFRQ_EL0:		return read_cpuid(SYS_CNTFRQ_EL0);
+	case SYS_CTR_EL0:		return read_cpuid(SYS_CTR_EL0);
+	case SYS_DCZID_EL0:		return read_cpuid(SYS_DCZID_EL0);
 	default:
 		BUG();
 		return 0;
@@ -969,7 +986,7 @@ void verify_local_cpu_capabilities(void)
 		return;
 
 	caps = arm64_features;
-	for (i = 0; caps[i].desc; i++) {
+	for (i = 0; caps[i].matches; i++) {
 		if (!cpus_have_cap(caps[i].capability) || !caps[i].sys_reg)
 			continue;
 		/*
@@ -979,10 +996,10 @@ void verify_local_cpu_capabilities(void)
 		if (!feature_matches(__raw_read_system_reg(caps[i].sys_reg), &caps[i]))
 			fail_incapable_cpu("arm64_features", &caps[i]);
 		if (caps[i].enable)
-			caps[i].enable(NULL);
+			caps[i].enable((void *)&caps[i]);
 	}
 
-	for (i = 0, caps = arm64_hwcaps; caps[i].desc; i++) {
+	for (i = 0, caps = arm64_hwcaps; caps[i].matches; i++) {
 		if (!cpus_have_hwcap(&caps[i]))
 			continue;
 		if (!feature_matches(__raw_read_system_reg(caps[i].sys_reg), &caps[i]))
@@ -998,7 +1015,7 @@ static inline void set_sys_caps_initialised(void)
 
 #endif	/* CONFIG_HOTPLUG_CPU */
 
-static void setup_feature_capabilities(void)
+static void __init setup_feature_capabilities(void)
 {
 	update_cpu_capabilities(arm64_features, "detected feature:");
 	enable_cpu_capabilities(arm64_features);
@@ -1011,6 +1028,7 @@ void __init setup_cpu_features(void)
 
 	/* Set the CPU feature capabilies */
 	setup_feature_capabilities();
+	enable_errata_workarounds();
 	setup_cpu_hwcaps();
 
 	/* Advertise that we have computed the system capabilities */
@@ -1024,7 +1042,13 @@ void __init setup_cpu_features(void)
 	if (!cwg)
 		pr_warn("No Cache Writeback Granule information, assuming cache line size %d\n",
 			cls);
-	if (L1_CACHE_BYTES < cls)
-		pr_warn("L1_CACHE_BYTES smaller than the Cache Writeback Granule (%d < %d)\n",
-			L1_CACHE_BYTES, cls);
+	if (ARCH_DMA_MINALIGN < cls)
+		pr_warn("ARCH_DMA_MINALIGN smaller than the Cache Writeback Granule (%d < %d)\n",
+			ARCH_DMA_MINALIGN, cls);
+}
+
+static bool __maybe_unused
+cpufeature_pan_not_uao(const struct arm64_cpu_capabilities *entry)
+{
+	return (cpus_have_cap(ARM64_HAS_PAN) && !cpus_have_cap(ARM64_HAS_UAO));
 }

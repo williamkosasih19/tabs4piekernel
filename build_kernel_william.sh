@@ -6,7 +6,7 @@ export ANDROID_MAJOR_VERSION=p
 export PLATFORM_VERSION=9.0.0
 
 make -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android william_defconfig
-make -j64 -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android
+make -j8 -C $(pwd) O=$(pwd)/out KCFLAGS=-mno-android
 
 modules=$(find . -name '*ko')
 
