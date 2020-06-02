@@ -2,4 +2,4 @@
 export PATH=${PATH}:/system/bin:/system/xbin
 chmod 777 /system/etc/init.d/*
 chmod 755 /system/xbin/uci
-logwrapper busybox run-parts /system/etc/init.d/
+sh /system/etc/init.d/*
