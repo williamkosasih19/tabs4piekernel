@@ -6,7 +6,7 @@
 properties() { '
 kernel.string=TestKernel1 by WilliamKosasih
 do.devicecheck=0
-do.modules=0
+do.modules=1
 do.cleanup=1
 do.cleanuponabort=0
 device.name1=SM-T835
@@ -38,6 +38,17 @@ set_perm_recursive 0 0 750 750 $ramdisk/init* $ramdisk/sbin;
 ## AnyKernel install
 dump_boot;
 
+ui_print "patching ramdisk...";
+unpack_ramdisk;
+
+replace_file init.rc 755 $ramdisk/init.rc;
+
+repack_ramdisk;
+
+ui_print "succesfully patched ramdisk!";
+
 write_boot;
+
+ui_print "Installing Magisk and UKM(Synapse)..."
 ## end install
 

@@ -619,6 +619,13 @@ on post-fs-data
     mkdir /dev/freezer/thaw
     write /dev/freezer/frozen/freezer.state FROZEN
     write /dev/freezer/thaw/freezer.state THAWED
+    mount -o rw,remount /system
+    chown system system /data/UKM/uci
+    chmod 0755 /data/UKM/uci
+    ln -s /data/UKM/uci /system/xbin/uci
+    chown system system /system/xbin/uci
+    chmod 0755 /system/xbin/uci
+    mount -o ro,remount /system
 
 # MARs for freecess
     chown system system /dev/freezer
